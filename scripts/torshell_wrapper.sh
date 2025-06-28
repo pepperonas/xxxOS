@@ -50,6 +50,30 @@ cat > "$WRAPPER_DIR/ssh" << 'EOF'
 exec proxychains4 -q /usr/bin/ssh "$@"
 EOF
 
+# traceroute wrapper
+cat > "$WRAPPER_DIR/traceroute" << 'EOF'
+#!/bin/bash
+exec proxychains4 -q /usr/sbin/traceroute "$@"
+EOF
+
+# nslookup wrapper
+cat > "$WRAPPER_DIR/nslookup" << 'EOF'
+#!/bin/bash
+exec proxychains4 -q /usr/bin/nslookup "$@"
+EOF
+
+# dig wrapper
+cat > "$WRAPPER_DIR/dig" << 'EOF'
+#!/bin/bash
+exec proxychains4 -q /usr/bin/dig "$@"
+EOF
+
+# telnet wrapper
+cat > "$WRAPPER_DIR/telnet" << 'EOF'
+#!/bin/bash
+exec proxychains4 -q /usr/bin/telnet "$@"
+EOF
+
 # Mache alle ausführbar
 chmod +x "$WRAPPER_DIR"/*
 
