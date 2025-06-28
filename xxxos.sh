@@ -20,7 +20,7 @@ NC='\033[0m' # No Color
 # Banner anzeigen
 show_banner() {
 echo -e "${GREEN}"
-echo "                       xxxOS v1.0                         "
+echo "                    xxxOS v0.0.1-beta                         "
 echo "                Privacy & Anonymity Tools                 "
 echo "                                                            "
 echo "       01001000 01001001 01000100 01000100 01000101         "
