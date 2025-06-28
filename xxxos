@@ -8,6 +8,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 TOR_SCRIPT="$SCRIPT_DIR/scripts/tor_control.sh"
 MAC_SCRIPT="$SCRIPT_DIR/scripts/mac_spoofer.sh"
 PRIVACY_SCRIPT="$SCRIPT_DIR/scripts/privacy_enhance.sh"
+PROXYCHAINS_SCRIPT="$SCRIPT_DIR/scripts/proxychains_setup.sh"
 
 # Farben für die Ausgabe
 RED='\033[0;31m'
@@ -31,6 +32,8 @@ show_help() {
     echo "Usage: $0 [command] [options]"
     echo ""
     echo "Commands:"
+    echo "  status           - Gesamtstatus aller Privacy-Funktionen"
+    echo ""
     echo "  tor <action>     - Tor-Kontrolle"
     echo "    start          - Tor starten"
     echo "    stop           - Tor stoppen"
@@ -58,9 +61,12 @@ show_help() {
     echo "    block-tracking - Tracking blockieren"
     echo "    all            - Alle Funktionen aktivieren"
     echo ""
+    echo "  proxychains      - ProxyChains für Terminal einrichten"
+    echo ""
     echo "  help             - Diese Hilfe anzeigen"
     echo ""
     echo "Examples:"
+    echo "  $0 status                 # Gesamtstatus anzeigen"
     echo "  $0 tor start              # Tor starten"
     echo "  $0 mac                    # MAC-Adresse ändern"
     echo "  $0 privacy on             # Vollständiger Privacy-Modus"
@@ -175,6 +181,11 @@ handle_privacy() {
             "$TOR_SCRIPT" full-on
             echo ""
             
+            # ProxyChains Setup
+            echo -e "${BLUE}Schritt 4: ProxyChains konfigurieren${NC}"
+            "$PROXYCHAINS_SCRIPT" install
+            echo ""
+            
             echo -e "${GREEN}✅ ULTRA PRIVACY MODUS AKTIVIERT!${NC}"
             echo ""
             echo -e "${YELLOW}Wichtige Hinweise:${NC}"
@@ -184,11 +195,18 @@ handle_privacy() {
             echo "- Browser-Daten wurden gelöscht"
             echo "- Hostname wurde randomisiert"
             echo "- Ortungsdienste sind deaktiviert"
+            echo "- ProxyChains ist konfiguriert für Terminal-Befehle"
             echo ""
-            echo -e "${RED}⚠️  Vergiss nicht:${NC}"
-            echo "- WebRTC in deinem Browser zu deaktivieren"
-            echo "- Tor Browser für maximale Anonymität zu nutzen"
-            echo "- JavaScript wenn möglich zu deaktivieren"
+            echo -e "${RED}⚠️  Terminal-Nutzung:${NC}"
+            echo "- Normale Befehle: curl ipinfo.io (zeigt echte IP)"
+            echo "- Über Tor: proxychains4 curl ipinfo.io"
+            echo "- Oder kürzer: pc curl ipinfo.io"
+            echo "- Tor-Shell: torshell (alles über Tor)"
+            echo ""
+            echo -e "${RED}⚠️  Browser:${NC}"
+            echo "- WebRTC in deinem Browser deaktivieren"
+            echo "- Tor Browser für maximale Anonymität nutzen"
+            echo "- JavaScript wenn möglich deaktivieren"
             ;;
             
         *)
@@ -209,6 +227,123 @@ handle_enhance() {
     "$PRIVACY_SCRIPT" "$1"
 }
 
+# Gesamtstatus anzeigen
+show_overall_status() {
+    show_banner
+    echo -e "${BLUE}📊 XXXOS PRIVACY STATUS${NC}"
+    echo "========================"
+    echo ""
+    
+    # MAC-Adresse
+    echo -e "${BLUE}[1] MAC-Adresse${NC}"
+    CURRENT_MAC=$(ifconfig en0 | grep ether | awk '{print $2}' 2>/dev/null || echo "Unbekannt")
+    echo "    └─ Aktuelle MAC: $CURRENT_MAC"
+    echo ""
+    
+    # Tor Status
+    echo -e "${BLUE}[2] Tor-Netzwerk${NC}"
+    if lsof -i :9050 > /dev/null 2>&1; then
+        echo "    ├─ Service: ✅ Läuft (Port 9050)"
+        # Proxy Status
+        local proxy_state=$(networksetup -getsocksfirewallproxy "Wi-Fi" 2>/dev/null | grep "Enabled: Yes")
+        if [ -n "$proxy_state" ]; then
+            echo "    ├─ System-Proxy: ✅ Aktiviert"
+        else
+            echo "    ├─ System-Proxy: ❌ Deaktiviert"
+        fi
+        # IP-Check
+        local is_tor=$(curl -s --connect-timeout 3 https://check.torproject.org/api/ip 2>/dev/null | jq -r '.IsTor' 2>/dev/null || echo "false")
+        if [ "$is_tor" = "true" ]; then
+            echo "    └─ Verbindung: ✅ Über Tor"
+        else
+            echo "    └─ Verbindung: ⚠️  Direkt (nicht über Tor)"
+        fi
+    else
+        echo "    └─ Service: ❌ Gestoppt"
+    fi
+    echo ""
+    
+    # Firewall Status
+    echo -e "${BLUE}[3] Firewall${NC}"
+    local fw_status=$(/usr/libexec/ApplicationFirewall/socketfilterfw --getglobalstate 2>/dev/null | grep "enabled")
+    if [ -n "$fw_status" ]; then
+        echo "    ├─ Status: ✅ Aktiviert"
+        local stealth=$(/usr/libexec/ApplicationFirewall/socketfilterfw --getstealthmode 2>/dev/null | grep "enabled")
+        if [ -n "$stealth" ]; then
+            echo "    └─ Stealth-Modus: ✅ Aktiviert"
+        else
+            echo "    └─ Stealth-Modus: ❌ Deaktiviert"
+        fi
+    else
+        echo "    └─ Status: ❌ Deaktiviert"
+    fi
+    echo ""
+    
+    # DNS Status
+    echo -e "${BLUE}[4] DNS-Konfiguration${NC}"
+    local dns_servers=$(networksetup -getdnsservers "Wi-Fi" 2>/dev/null | head -2 | tr '\n' ' ')
+    if [[ "$dns_servers" == *"1.1.1.1"* ]]; then
+        echo "    └─ Server: ✅ Cloudflare (Privacy)"
+    elif [[ "$dns_servers" == *"9.9.9.9"* ]]; then
+        echo "    └─ Server: ✅ Quad9 (Privacy)"
+    elif [[ "$dns_servers" == *"There aren't any"* ]]; then
+        echo "    └─ Server: ⚠️  Standard (DHCP)"
+    else
+        echo "    └─ Server: $dns_servers"
+    fi
+    echo ""
+    
+    # Hostname
+    echo -e "${BLUE}[5] System-Identifikation${NC}"
+    local hostname=$(scutil --get ComputerName 2>/dev/null || echo "Unbekannt")
+    echo "    └─ Hostname: $hostname"
+    echo ""
+    
+    # Tracking-Schutz
+    echo -e "${BLUE}[6] Tracking-Schutz${NC}"
+    if grep -q "# xxxOS Privacy Block List" /etc/hosts 2>/dev/null; then
+        local blocked_count=$(grep -c "^0.0.0.0" /etc/hosts 2>/dev/null || echo "0")
+        echo "    └─ Hosts-Datei: ✅ Modifiziert ($blocked_count Domains blockiert)"
+    else
+        echo "    └─ Hosts-Datei: ❌ Standard"
+    fi
+    echo ""
+    
+    # Ortungsdienste
+    echo -e "${BLUE}[7] Ortungsdienste${NC}"
+    if pgrep -x "locationd" > /dev/null 2>&1; then
+        echo "    └─ Status: ⚠️  Aktiviert"
+    else
+        echo "    └─ Status: ✅ Deaktiviert"
+    fi
+    echo ""
+    
+    # Privacy-Level Einschätzung
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    local privacy_score=0
+    
+    # Punkte berechnen
+    [ "$is_tor" = "true" ] && privacy_score=$((privacy_score + 3))
+    [ -n "$fw_status" ] && privacy_score=$((privacy_score + 2))
+    [[ "$dns_servers" == *"1.1.1.1"* || "$dns_servers" == *"9.9.9.9"* ]] && privacy_score=$((privacy_score + 2))
+    grep -q "# xxxOS Privacy Block List" /etc/hosts 2>/dev/null && privacy_score=$((privacy_score + 2))
+    ! pgrep -x "locationd" > /dev/null 2>&1 && privacy_score=$((privacy_score + 1))
+    
+    echo -n "Privacy-Level: "
+    if [ $privacy_score -ge 8 ]; then
+        echo -e "${GREEN}⬛⬛⬛⬛⬛ MAXIMUM${NC}"
+    elif [ $privacy_score -ge 6 ]; then
+        echo -e "${GREEN}⬛⬛⬛⬛⬜ HOCH${NC}"
+    elif [ $privacy_score -ge 4 ]; then
+        echo -e "${YELLOW}⬛⬛⬛⬜⬜ MITTEL${NC}"
+    elif [ $privacy_score -ge 2 ]; then
+        echo -e "${YELLOW}⬛⬛⬜⬜⬜ NIEDRIG${NC}"
+    else
+        echo -e "${RED}⬛⬜⬜⬜⬜ MINIMAL${NC}"
+    fi
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+}
+
 # Hauptprogramm
 main() {
     check_scripts
@@ -220,6 +355,9 @@ main() {
     fi
     
     case "$1" in
+        status)
+            show_overall_status
+            ;;
         tor)
             handle_tor "$2"
             ;;
@@ -231,6 +369,9 @@ main() {
             ;;
         enhance)
             handle_enhance "$2"
+            ;;
+        proxychains)
+            "$PROXYCHAINS_SCRIPT" install
             ;;
         help|-h|--help)
             show_banner
