@@ -1,0 +1,248 @@
+#!/bin/bash
+
+# xxxOS Control Script
+# Zentrales Steuerungsskript für Privacy-Tools
+# (c) 2025 Martin Pfeffer - MIT License
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+TOR_SCRIPT="$SCRIPT_DIR/scripts/tor_control.sh"
+MAC_SCRIPT="$SCRIPT_DIR/scripts/mac_spoofer.sh"
+PRIVACY_SCRIPT="$SCRIPT_DIR/scripts/privacy_enhance.sh"
+
+# Farben für die Ausgabe
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[0;33m'
+BLUE='\033[0;34m'
+NC='\033[0m' # No Color
+
+# Banner anzeigen
+show_banner() {
+    echo -e "${BLUE}"
+    echo "╔══════════════════════════════════╗"
+    echo "║            xxxOS v1.0            ║"
+    echo "║    Privacy & Anonymity Tools     ║"
+    echo "╚══════════════════════════════════╝"
+    echo -e "${NC}"
+}
+
+# Hilfe anzeigen
+show_help() {
+    echo "Usage: $0 [command] [options]"
+    echo ""
+    echo "Commands:"
+    echo "  tor <action>     - Tor-Kontrolle"
+    echo "    start          - Tor starten"
+    echo "    stop           - Tor stoppen"
+    echo "    status         - Status anzeigen"
+    echo "    proxy-on       - System-Proxy aktivieren"
+    echo "    proxy-off      - System-Proxy deaktivieren"
+    echo "    full-on        - Tor + Proxy aktivieren"
+    echo "    full-off       - Tor + Proxy deaktivieren"
+    echo "    test           - Verbindung testen"
+    echo ""
+    echo "  mac              - MAC-Adresse ändern (benötigt sudo)"
+    echo ""
+    echo "  privacy          - Vollständiger Privacy-Modus"
+    echo "    on             - MAC ändern + Tor aktivieren"
+    echo "    off            - Tor deaktivieren"
+    echo "    status         - Aktuellen Status anzeigen"
+    echo "    ultra          - Ultra-Privacy (alle Funktionen)"
+    echo ""
+    echo "  enhance <action> - Erweiterte Privacy-Funktionen"
+    echo "    dns-clear      - DNS-Cache leeren"
+    echo "    hostname       - Hostname randomisieren"
+    echo "    browser-clear  - Browser-Daten löschen"
+    echo "    firewall       - Firewall aktivieren"
+    echo "    dns-privacy    - Privacy-DNS setzen"
+    echo "    block-tracking - Tracking blockieren"
+    echo "    all            - Alle Funktionen aktivieren"
+    echo ""
+    echo "  help             - Diese Hilfe anzeigen"
+    echo ""
+    echo "Examples:"
+    echo "  $0 tor start              # Tor starten"
+    echo "  $0 mac                    # MAC-Adresse ändern"
+    echo "  $0 privacy on             # Vollständiger Privacy-Modus"
+    echo "  $0 privacy ultra          # Maximum Privacy"
+    echo "  $0 enhance dns-clear      # DNS-Cache leeren"
+}
+
+# Überprüfe ob Skripte existieren
+check_scripts() {
+    if [ ! -f "$TOR_SCRIPT" ]; then
+        echo -e "${RED}Fehler: tor_control.sh nicht gefunden in $TOR_SCRIPT${NC}"
+        exit 1
+    fi
+    if [ ! -f "$MAC_SCRIPT" ]; then
+        echo -e "${RED}Fehler: mac_spoofer.sh nicht gefunden in $MAC_SCRIPT${NC}"
+        exit 1
+    fi
+    if [ ! -f "$PRIVACY_SCRIPT" ]; then
+        echo -e "${RED}Fehler: privacy_enhance.sh nicht gefunden in $PRIVACY_SCRIPT${NC}"
+        exit 1
+    fi
+}
+
+# Tor-Kontrolle
+handle_tor() {
+    if [ -z "$1" ]; then
+        echo -e "${RED}Fehler: Keine Aktion angegeben${NC}"
+        echo "Verwende: $0 tor {start|stop|status|proxy-on|proxy-off|full-on|full-off|test}"
+        exit 1
+    fi
+    "$TOR_SCRIPT" "$1"
+}
+
+# MAC-Adresse ändern
+handle_mac() {
+    echo -e "${YELLOW}MAC-Adresse wird geändert (benötigt sudo)...${NC}"
+    sudo "$MAC_SCRIPT"
+}
+
+# Privacy-Modus
+handle_privacy() {
+    case "$1" in
+        on)
+            show_banner
+            echo -e "${GREEN}🔒 Aktiviere vollständigen Privacy-Modus...${NC}"
+            echo ""
+            
+            # MAC-Adresse ändern
+            echo -e "${BLUE}Schritt 1: MAC-Adresse ändern${NC}"
+            sudo "$MAC_SCRIPT"
+            echo ""
+            
+            # Tor aktivieren
+            echo -e "${BLUE}Schritt 2: Tor aktivieren${NC}"
+            "$TOR_SCRIPT" full-on
+            echo ""
+            
+            echo -e "${GREEN}✅ Privacy-Modus aktiviert!${NC}"
+            echo ""
+            echo "Tipps:"
+            echo "- Verwende den Tor Browser für maximale Anonymität"
+            echo "- Oder nutze: proxychains4 <command> für einzelne Anwendungen"
+            echo "- Safari nutzt automatisch den System-Proxy"
+            ;;
+            
+        off)
+            show_banner
+            echo -e "${YELLOW}🔓 Deaktiviere Privacy-Modus...${NC}"
+            echo ""
+            
+            "$TOR_SCRIPT" full-off
+            echo ""
+            
+            echo -e "${GREEN}✅ Privacy-Modus deaktiviert${NC}"
+            echo -e "${YELLOW}Hinweis: MAC-Adresse bleibt geändert bis zum Neustart${NC}"
+            ;;
+            
+        status)
+            show_banner
+            echo -e "${BLUE}📊 Privacy-Status${NC}"
+            echo "=================="
+            echo ""
+            
+            # MAC-Adresse Status
+            echo -e "${BLUE}MAC-Adresse:${NC}"
+            CURRENT_MAC=$(ifconfig en0 | grep ether | awk '{print $2}')
+            echo "Aktuelle MAC: $CURRENT_MAC"
+            echo ""
+            
+            # Tor Status
+            "$TOR_SCRIPT" status
+            ;;
+            
+        ultra)
+            show_banner
+            echo -e "${RED}🛡️  ULTRA PRIVACY MODUS${NC}"
+            echo "======================"
+            echo ""
+            
+            # MAC-Adresse ändern
+            echo -e "${BLUE}Schritt 1: MAC-Adresse ändern${NC}"
+            sudo "$MAC_SCRIPT"
+            echo ""
+            
+            # Erweiterte Privacy-Funktionen
+            echo -e "${BLUE}Schritt 2: Erweiterte Privacy-Funktionen${NC}"
+            "$PRIVACY_SCRIPT" all
+            echo ""
+            
+            # Tor aktivieren
+            echo -e "${BLUE}Schritt 3: Tor aktivieren${NC}"
+            "$TOR_SCRIPT" full-on
+            echo ""
+            
+            echo -e "${GREEN}✅ ULTRA PRIVACY MODUS AKTIVIERT!${NC}"
+            echo ""
+            echo -e "${YELLOW}Wichtige Hinweise:${NC}"
+            echo "- Firewall ist aktiv mit Stealth-Modus"
+            echo "- DNS läuft über Cloudflare (1.1.1.1)"
+            echo "- Tracking-Domains sind blockiert"
+            echo "- Browser-Daten wurden gelöscht"
+            echo "- Hostname wurde randomisiert"
+            echo "- Ortungsdienste sind deaktiviert"
+            echo ""
+            echo -e "${RED}⚠️  Vergiss nicht:${NC}"
+            echo "- WebRTC in deinem Browser zu deaktivieren"
+            echo "- Tor Browser für maximale Anonymität zu nutzen"
+            echo "- JavaScript wenn möglich zu deaktivieren"
+            ;;
+            
+        *)
+            echo -e "${RED}Fehler: Ungültige Option${NC}"
+            echo "Verwende: $0 privacy {on|off|status|ultra}"
+            exit 1
+            ;;
+    esac
+}
+
+# Erweiterte Privacy-Funktionen
+handle_enhance() {
+    if [ -z "$1" ]; then
+        echo -e "${RED}Fehler: Keine Aktion angegeben${NC}"
+        "$PRIVACY_SCRIPT"
+        exit 1
+    fi
+    "$PRIVACY_SCRIPT" "$1"
+}
+
+# Hauptprogramm
+main() {
+    check_scripts
+    
+    if [ $# -eq 0 ]; then
+        show_banner
+        show_help
+        exit 0
+    fi
+    
+    case "$1" in
+        tor)
+            handle_tor "$2"
+            ;;
+        mac)
+            handle_mac
+            ;;
+        privacy)
+            handle_privacy "$2"
+            ;;
+        enhance)
+            handle_enhance "$2"
+            ;;
+        help|-h|--help)
+            show_banner
+            show_help
+            ;;
+        *)
+            echo -e "${RED}Fehler: Unbekannter Befehl '$1'${NC}"
+            echo "Verwende: $0 help für Hilfe"
+            exit 1
+            ;;
+    esac
+}
+
+# Skript ausführen
+main "$@"
