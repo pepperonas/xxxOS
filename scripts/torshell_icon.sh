@@ -73,7 +73,7 @@ update_torshell_config() {
     mkdir -p "$WRAPPER_DIR"
     
     cat > "$WRAPPER_DIR/.zshrc" << EOF
-export PS1="${icon}  [TOR] %1~ %# "
+export PS1="%{${icon}%}  [TOR] %1~ %#%{ %}"
 alias checkip='curl https://check.torproject.org/api/ip'
 alias myip='curl http://icanhazip.com'
 echo "🔥 Tor-Shell aktiv ($icon_name)! Teste mit: checkip"
