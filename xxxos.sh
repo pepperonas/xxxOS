@@ -262,7 +262,8 @@ show_overall_status() {
     
     # Tor Status
     echo -e "${BLUE}[2] Tor-Netzwerk${NC}"
-    if lsof -i :9050 > /dev/null 2>&1; then
+    local is_tor="false"  # Standardwert setzen
+    if pgrep -x "tor" > /dev/null 2>&1 || netstat -an | grep -E "\.9050.*LISTEN" > /dev/null 2>&1; then
         echo "    ├─ Service: ✅ Läuft (Port 9050)"
         # Proxy Status
         local proxy_state=$(networksetup -getsocksfirewallproxy "Wi-Fi" 2>/dev/null | grep "Enabled: Yes")
@@ -272,7 +273,7 @@ show_overall_status() {
             echo "    ├─ System-Proxy: ❌ Deaktiviert"
         fi
         # IP-Check
-        local is_tor=$(curl -s --connect-timeout 3 https://check.torproject.org/api/ip 2>/dev/null | jq -r '.IsTor' 2>/dev/null || echo "false")
+        is_tor=$(curl -s --connect-timeout 3 https://check.torproject.org/api/ip 2>/dev/null | jq -r '.IsTor' 2>/dev/null || echo "false")
         if [ "$is_tor" = "true" ]; then
             echo "    └─ Verbindung: ✅ Über Tor"
         else
@@ -342,17 +343,22 @@ show_overall_status() {
     echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
     local privacy_score=0
     
-    # Punkte berechnen
-    [ "$is_tor" = "true" ] && privacy_score=$((privacy_score + 3))
+    # Punkte berechnen (Tor wird sehr stark gewichtet)
+    # Tor-Punkte vergeben wenn: Service läuft UND (Verbindung über Tor ODER System-Proxy aktiv)
+    local tor_running=$(pgrep -x "tor" > /dev/null 2>&1 || netstat -an | grep -E "\.9050.*LISTEN" > /dev/null 2>&1; echo $?)
+    local proxy_active=$(networksetup -getsocksfirewallproxy "Wi-Fi" 2>/dev/null | grep "Enabled: Yes")
+    if [ "$tor_running" = "0" ] && ([ "$is_tor" = "true" ] || [ -n "$proxy_active" ]); then
+        privacy_score=$((privacy_score + 6))  # Tor ist wichtigster Faktor
+    fi
     [ -n "$fw_status" ] && privacy_score=$((privacy_score + 2))
-    [[ "$dns_servers" == *"1.1.1.1"* || "$dns_servers" == *"9.9.9.9"* ]] && privacy_score=$((privacy_score + 2))
-    grep -q "# xxxOS Privacy Block List" /etc/hosts 2>/dev/null && privacy_score=$((privacy_score + 2))
+    [[ "$dns_servers" == *"1.1.1.1"* || "$dns_servers" == *"9.9.9.9"* ]] && privacy_score=$((privacy_score + 1))
+    grep -q "# xxxOS Privacy Block List" /etc/hosts 2>/dev/null && privacy_score=$((privacy_score + 1))
     ! pgrep -x "locationd" > /dev/null 2>&1 && privacy_score=$((privacy_score + 1))
     
     echo -n "Privacy-Level: "
-    if [ $privacy_score -ge 8 ]; then
+    if [ $privacy_score -ge 9 ]; then
         echo -e "${GREEN}⬛⬛⬛⬛⬛ MAXIMUM${NC}"
-    elif [ $privacy_score -ge 6 ]; then
+    elif [ $privacy_score -ge 7 ]; then
         echo -e "${GREEN}⬛⬛⬛⬛⬜ HOCH${NC}"
     elif [ $privacy_score -ge 4 ]; then
         echo -e "${YELLOW}⬛⬛⬛⬜⬜ MITTEL${NC}"
@@ -394,7 +400,7 @@ show_ip_info() {
     echo ""
     
     # Tor-Verbindung (falls aktiv)
-    if lsof -i :9050 > /dev/null 2>&1; then
+    if pgrep -x "tor" > /dev/null 2>&1 || netstat -an | grep -E "\.9050.*LISTEN" > /dev/null 2>&1; then
         echo -e "${BLUE}[2] Tor-Verbindung${NC}"
         echo "─────────────────────"
         

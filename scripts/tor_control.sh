@@ -36,7 +36,8 @@ stop_tor() {
     killall tor 2>/dev/null
     sleep 1
     
-    if ! lsof -i :9050 > /dev/null 2>&1; then
+    # Prüfe, ob Tor wirklich gestoppt ist (nur aktive Prozesse, keine geschlossenen Verbindungen)
+    if ! pgrep -x "tor" > /dev/null 2>&1 && ! netstat -an | grep -E "\.9050.*LISTEN" > /dev/null 2>&1; then
         echo "✅ Tor gestoppt"
     else
         echo "❌ Tor läuft noch"
@@ -64,8 +65,8 @@ show_status() {
     local service_status=$(brew services list | grep tor | awk '{print $2}')
     echo "Service: $service_status"
     
-    # Port Check
-    if lsof -i :9050 > /dev/null 2>&1; then
+    # Port Check (nur aktive LISTEN-Verbindungen)
+    if netstat -an | grep -E "\.9050.*LISTEN" > /dev/null 2>&1; then
         echo "Port 9050: ✅ Aktiv"
     else
         echo "Port 9050: ❌ Inaktiv"
