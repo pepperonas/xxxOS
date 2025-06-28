@@ -19,12 +19,30 @@ NC='\033[0m' # No Color
 
 # Banner anzeigen
 show_banner() {
-    echo -e "${BLUE}"
-    echo "╔══════════════════════════════════╗"
-    echo "║            xxxOS v1.0            ║"
-    echo "║    Privacy & Anonymity Tools     ║"
-    echo "╚══════════════════════════════════╝"
-    echo -e "${NC}"
+echo -e "${GREEN}"
+echo "                       xxxOS v1.0                         "
+echo "                Privacy & Anonymity Tools                 "
+echo "                                                            "
+echo "       01001000 01001001 01000100 01000100 01000101         "
+echo "       01001110 00100000 01001001 01001110 00100000         "
+echo "       01010000 01001100 01000001 01001001 01001110         "
+echo "       00100000 01010011 01001001 01000111 01001000         "
+echo "       01010100 00101110 00101110 00101110 00101110         "
+echo "                                                            "
+echo "                ▐▄• ▄▐▄• ▄▐▄• ▄     .▄▄ ·                    "
+echo "                 █▌█▌▪█▌█▌▪█▌█▌▪    ▐█                      "
+echo "                 ·██· ·██· ·██· ▄█▀▄▄▀▀▀█▄                   "
+echo "                ▪▐█·█▪▐█·█▪▐█·█▐█▌.▐▐█▄▪▐█                  "
+echo "                •▀▀ ▀•▀▀ ▀•▀▀ ▀▀▀█▄▀▪▀▀▀▀                    "
+echo "                                                            "
+echo "      \"The human race has only one really effective     "
+echo "           weapon, and that is laughter.\"               "
+echo "                                                         "
+echo "                   - Mark Twain                          "
+echo "                                                            "
+echo -e "${BLUE}            Built 🔒 by Martin Pfeffer                  ${NC}"
+echo "                                                            "
+echo "                                                            "
 }
 
 # Hilfe anzeigen
@@ -33,6 +51,7 @@ show_help() {
     echo ""
     echo "Commands:"
     echo "  status           - Gesamtstatus aller Privacy-Funktionen"
+    echo "  ipinfo           - Detaillierte IP-Informationen anzeigen"
     echo ""
     echo "  tor <action>     - Tor-Kontrolle"
     echo "    start          - Tor starten"
@@ -67,6 +86,7 @@ show_help() {
     echo ""
     echo "Examples:"
     echo "  $0 status                 # Gesamtstatus anzeigen"
+    echo "  $0 ipinfo                 # Detaillierte IP-Informationen"
     echo "  $0 tor start              # Tor starten"
     echo "  $0 mac                    # MAC-Adresse ändern"
     echo "  $0 privacy on             # Vollständiger Privacy-Modus"
@@ -344,19 +364,195 @@ show_overall_status() {
     echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 }
 
+# Detaillierte IP-Informationen anzeigen
+show_ip_info() {
+    show_banner
+    echo -e "${BLUE}📍 IP-INFORMATIONEN${NC}"
+    echo "===================="
+    echo ""
+    
+    # Prüfe ob jq installiert ist
+    if ! command -v jq &> /dev/null; then
+        echo -e "${YELLOW}⚠️  jq ist nicht installiert. Installiere es mit: brew install jq${NC}"
+        echo ""
+    fi
+    
+    echo -e "${BLUE}[1] Normale Verbindung${NC}"
+    echo "────────────────────────"
+    if command -v jq &> /dev/null; then
+        curl -s --connect-timeout 10 https://ipapi.co/json/ | jq -r '
+        "🌐 IP-Adresse:     " + .ip,
+        "🏙️  Stadt:          " + .city,
+        "🗺️  Region:         " + .region,
+        "🏳️  Land:           " + .country_name + " (" + .country + ")",
+        "📍 Koordinaten:    " + (.latitude|tostring) + ", " + (.longitude|tostring),
+        "🕐 Zeitzone:       " + .timezone + " (UTC" + .utc_offset + ")",
+        "🌐 ISP:            " + .isp'
+    else
+        echo "IP-Adresse: $(curl -s --connect-timeout 10 http://icanhazip.com)"
+    fi
+    echo ""
+    
+    # Tor-Verbindung (falls aktiv)
+    if lsof -i :9050 > /dev/null 2>&1; then
+        echo -e "${BLUE}[2] Tor-Verbindung${NC}"
+        echo "─────────────────────"
+        
+        # Prüfe ob ProxyChains funktioniert
+        local tor_test=$(proxychains4 -q curl -s --connect-timeout 10 https://check.torproject.org/api/ip 2>/dev/null | jq -r '.IsTor' 2>/dev/null)
+        
+        if [[ "$tor_test" == "true" ]]; then
+            if command -v jq &> /dev/null; then
+                proxychains4 -q curl -s --connect-timeout 10 https://ipapi.co/json/ 2>/dev/null | jq -r '
+                "🧅 Tor-IP:         " + .ip,
+                "🏙️  Stadt:          " + .city,
+                "🗺️  Region:         " + .region,
+                "🏳️  Land:           " + .country_name + " (" + .country + ")",
+                "📍 Koordinaten:    " + (.latitude|tostring) + ", " + (.longitude|tostring),
+                "🕐 Zeitzone:       " + .timezone + " (UTC" + .utc_offset + ")",
+                "🌐 ISP:            " + .isp'
+            else
+                echo "Tor-IP: $(proxychains4 -q curl -s --connect-timeout 10 http://icanhazip.com 2>/dev/null)"
+            fi
+            echo ""
+            echo -e "${GREEN}✅ Tor-Anonymisierung aktiv${NC}"
+        else
+            echo -e "${RED}❌ Tor-Verbindung fehlgeschlagen${NC}"
+        fi
+    else
+        echo -e "${YELLOW}ℹ️  Tor ist nicht aktiv${NC}"
+        echo "   Starte Tor mit: $0 tor start"
+    fi
+    
+    echo ""
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    echo -e "${BLUE}💡 Tipps:${NC}"
+    echo "• Für maximale Anonymität: Verwende den Tor Browser"
+    echo "• Tor-Shell starten: torshell"
+    echo "• Privacy-Status prüfen: $0 status"
+}
+
+# Interaktives Hauptmenü anzeigen
+show_interactive_menu() {
+    show_banner
+    echo -e "${BLUE}🔧 XXXOS HAUPTMENÜ${NC}"
+    echo "=================="
+    echo ""
+    echo "Verfügbare Funktionen:"
+    echo ""
+    echo "  1) status           - Gesamtstatus aller Privacy-Funktionen"
+    echo "  2) ipinfo           - Detaillierte IP-Informationen anzeigen"
+    echo "  3) privacy          - Privacy-Modi (on/off/status/ultra)"
+    echo "  4) tor              - Tor-Kontrolle (start/stop/status/full-on/full-off)"
+    echo "  5) mac              - MAC-Adresse ändern"
+    echo "  6) enhance          - Erweiterte Privacy-Funktionen"
+    echo "  7) proxychains      - ProxyChains für Terminal einrichten"
+    echo "  8) help             - Hilfe anzeigen"
+    echo "  9) exit             - Beenden"
+    echo ""
+}
+
+# Interaktive Eingabe verarbeiten
+handle_interactive_input() {
+    local choice="$1"
+    local param="$2"
+    
+    case "$choice" in
+        1|status)
+            show_overall_status
+            ;;
+        2|ipinfo)
+            show_ip_info
+            ;;
+        3|privacy)
+            if [ -z "$param" ]; then
+                echo ""
+                echo "Privacy-Modi:"
+                echo "  on     - Basic Privacy (MAC + Tor)"
+                echo "  off    - Privacy deaktivieren" 
+                echo "  status - Privacy-Status anzeigen"
+                echo "  ultra  - Ultra Privacy (alle Funktionen)"
+                echo ""
+                read -p "Welchen Privacy-Modus möchtest du? (on/off/status/ultra): " param
+            fi
+            handle_privacy "$param"
+            ;;
+        4|tor)
+            if [ -z "$param" ]; then
+                echo ""
+                echo "Tor-Aktionen:"
+                echo "  start    - Tor starten"
+                echo "  stop     - Tor stoppen"
+                echo "  status   - Status anzeigen"
+                echo "  full-on  - Tor + Proxy aktivieren"
+                echo "  full-off - Tor + Proxy deaktivieren"
+                echo ""
+                read -p "Welche Tor-Aktion möchtest du? (start/stop/status/full-on/full-off): " param
+            fi
+            handle_tor "$param"
+            ;;
+        5|mac)
+            handle_mac
+            ;;
+        6|enhance)
+            if [ -z "$param" ]; then
+                echo ""
+                echo "Erweiterte Privacy-Funktionen:"
+                echo "  dns-clear      - DNS-Cache leeren"
+                echo "  hostname       - Hostname randomisieren"
+                echo "  browser-clear  - Browser-Daten löschen"
+                echo "  firewall       - Firewall aktivieren"
+                echo "  dns-privacy    - Privacy-DNS setzen"
+                echo "  block-tracking - Tracking blockieren"
+                echo "  all            - Alle Funktionen aktivieren"
+                echo ""
+                read -p "Welche Funktion möchtest du? (dns-clear/hostname/browser-clear/etc.): " param
+            fi
+            handle_enhance "$param"
+            ;;
+        7|proxychains)
+            "$PROXYCHAINS_SCRIPT" install
+            ;;
+        8|help)
+            show_banner
+            show_help
+            ;;
+        9|exit)
+            echo "👋 Auf Wiedersehen!"
+            exit 0
+            ;;
+        *)
+            echo -e "${RED}❌ Ungültige Eingabe: $choice${NC}"
+            echo "Bitte Nummer (1-9) oder Funktionsname eingeben."
+            return 1
+            ;;
+    esac
+}
+
 # Hauptprogramm
 main() {
     check_scripts
     
     if [ $# -eq 0 ]; then
-        show_banner
-        show_help
-        exit 0
+        show_interactive_menu
+        echo ""
+        read -p "Funktion wählen (1-9 oder Name): " user_choice
+        
+        # Parse Eingabe (z.B. "3 ultra" oder "privacy ultra")
+        choice=$(echo "$user_choice" | awk '{print $1}')
+        param=$(echo "$user_choice" | awk '{print $2}')
+        
+        echo ""
+        handle_interactive_input "$choice" "$param"
+        exit $?
     fi
     
     case "$1" in
         status)
             show_overall_status
+            ;;
+        ipinfo)
+            show_ip_info
             ;;
         tor)
             handle_tor "$2"
