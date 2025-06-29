@@ -237,6 +237,40 @@ handle_privacy() {
     esac
 }
 
+# Security-Analyse-Funktionen
+handle_security() {
+    case "$1" in
+        system|network|dns|privacy|vuln|full)
+            "$SCRIPT_DIR/scripts/security_tools.sh" "$1"
+            ;;
+        "")
+            show_banner
+            echo -e "${BLUE}🛡️ XXXOS SECURITY TOOLS${NC}"
+            echo "========================"
+            echo ""
+            echo "Verfügbare Security Checks:"
+            echo ""
+            echo "  system  - System-Sicherheitsanalyse"
+            echo "  network - Netzwerk-Sicherheitsscan"
+            echo "  dns     - DNS-Sicherheitscheck"
+            echo "  privacy - Privacy-Audit"
+            echo "  vuln    - Vulnerability-Check"
+            echo "  full    - Komplette Sicherheitsanalyse"
+            echo ""
+            echo "Verwendung: $0 security [check-typ]"
+            echo ""
+            echo "Tor-Shell Security Tools:"
+            echo "  torshell - Öffnet Shell mit Security-Tools über Tor"
+            echo "  Verfügbar: nmap, gobuster, sqlmap, hydra, john"
+            ;;
+        *)
+            echo -e "${RED}Fehler: Ungültiger Security Check${NC}"
+            echo "Verwende: $0 security [system|network|dns|privacy|vuln|full]"
+            exit 1
+            ;;
+    esac
+}
+
 # Erweiterte Privacy-Funktionen
 handle_enhance() {
     if [ -z "$1" ]; then
@@ -453,8 +487,9 @@ show_interactive_menu() {
     echo "  5) mac              - MAC-Adresse ändern"
     echo "  6) enhance          - Erweiterte Privacy-Funktionen"
     echo "  7) proxychains      - ProxyChains für Terminal einrichten"
-    echo "  8) help             - Hilfe anzeigen"
-    echo "  9) exit             - Beenden"
+    echo "  8) security         - Security-Analyse-Tools"
+    echo "  9) help             - Hilfe anzeigen"
+    echo "  0) exit             - Beenden"
     echo ""
 }
 
@@ -519,17 +554,34 @@ handle_interactive_input() {
         7|proxychains)
             "$PROXYCHAINS_SCRIPT" install
             ;;
-        8|help)
+        8|security)
+            if [ -z "$2" ]; then
+                echo ""
+                echo "Security-Analyse:"
+                echo "  system  - System-Sicherheitsanalyse"
+                echo "  network - Netzwerk-Sicherheitsscan"
+                echo "  dns     - DNS-Sicherheitscheck"
+                echo "  privacy - Privacy-Audit"
+                echo "  vuln    - Vulnerability-Check"
+                echo "  full    - Komplette Analyse"
+                echo ""
+                read -p "Welchen Security-Check möchtest du? (system/network/dns/privacy/vuln/full): " param
+            else
+                param="$2"
+            fi
+            handle_security "$param"
+            ;;
+        9|help)
             show_banner
             show_help
             ;;
-        9|exit)
+        0|exit)
             echo "👋 Auf Wiedersehen!"
             exit 0
             ;;
         *)
             echo -e "${RED}❌ Ungültige Eingabe: $choice${NC}"
-            echo "Bitte Nummer (1-9) oder Funktionsname eingeben."
+            echo "Bitte Nummer (0-9) oder Funktionsname eingeben."
             return 1
             ;;
     esac
@@ -574,6 +626,9 @@ main() {
             ;;
         proxychains)
             "$PROXYCHAINS_SCRIPT" install
+            ;;
+        security)
+            handle_security "$2"
             ;;
         help|-h|--help)
             show_banner

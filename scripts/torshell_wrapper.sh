@@ -74,6 +74,44 @@ cat > "$WRAPPER_DIR/telnet" << 'EOF'
 exec proxychains4 -q /usr/bin/telnet "$@"
 EOF
 
+# === DEFENSIVE SECURITY TOOLS ===
+# Nur für legitime Sicherheitsanalysen verwenden!
+
+# nmap wrapper (Netzwerk-Scanning für Sicherheitsaudits)
+cat > "$WRAPPER_DIR/nmap" << 'EOF'
+#!/bin/bash
+echo "⚠️  NMAP über Tor - Nur für autorisierte Sicherheitsaudits!"
+exec proxychains4 -q /usr/local/bin/nmap "$@"
+EOF
+
+# gobuster wrapper (Directory/File Enumeration)
+cat > "$WRAPPER_DIR/gobuster" << 'EOF'
+#!/bin/bash
+echo "⚠️  Gobuster über Tor - Nur für autorisierte Penetrationstests!"
+exec proxychains4 -q gobuster "$@"
+EOF
+
+# sqlmap wrapper (SQL Injection Testing)
+cat > "$WRAPPER_DIR/sqlmap" << 'EOF'
+#!/bin/bash
+echo "⚠️  SQLMap über Tor - Nur für autorisierte Vulnerability Assessments!"
+exec proxychains4 -q sqlmap "$@"
+EOF
+
+# hydra wrapper (Password Testing - nur für eigene Systeme)
+cat > "$WRAPPER_DIR/hydra" << 'EOF'
+#!/bin/bash
+echo "⚠️  Hydra über Tor - Nur für autorisierte Sicherheitstests eigener Systeme!"
+exec proxychains4 -q hydra "$@"
+EOF
+
+# john wrapper (Password Recovery)
+cat > "$WRAPPER_DIR/john" << 'EOF'
+#!/bin/bash
+echo "ℹ️  John the Ripper - Password Recovery Tool"
+exec /usr/local/bin/john "$@"
+EOF
+
 # Mache alle ausführbar
 chmod +x "$WRAPPER_DIR"/*
 
@@ -87,8 +125,17 @@ alias checkip='curl https://check.torproject.org/api/ip'
 alias myip='curl -s http://icanhazip.com'
 alias normalip='echo "Normale IP:" && /usr/bin/curl -s http://icanhazip.com'
 
-echo "🔥 Tor-Shell aktiv!"
-echo "Teste mit: checkip"
+# Security Tools Hilfe
+alias sechelp='echo "Verfügbare Security Tools:"; echo "🔍 nmap - Netzwerk-Scanning"; echo "📁 gobuster - Directory Enumeration"; echo "💉 sqlmap - SQL Injection Testing"; echo "🔐 hydra - Password Testing"; echo "🔓 john - Password Recovery"; echo ""; echo "⚠️  Nur für autorisierte Tests verwenden!"'
+
+# Defensive Security Aliases
+alias vuln-scan='echo "Starte Vulnerability Scan..."; nmap -sV --script vuln'
+alias port-scan='nmap -sS -O'
+alias web-enum='gobuster dir -w /usr/share/wordlists/dirb/common.txt -u'
+
+echo "🔥 Tor-Shell mit Security Tools aktiv!"
+echo "Teste mit: checkip | Hilfe: sechelp"
+echo "⚠️  Nur für autorisierte Sicherheitstests verwenden!"
 echo ""
 EOF
 
