@@ -9,6 +9,7 @@ TOR_SCRIPT="$SCRIPT_DIR/scripts/tor_control.sh"
 MAC_SCRIPT="$SCRIPT_DIR/scripts/mac_spoofer.sh"
 PRIVACY_SCRIPT="$SCRIPT_DIR/scripts/privacy_enhance.sh"
 PROXYCHAINS_SCRIPT="$SCRIPT_DIR/scripts/proxychains_setup.sh"
+VPN_SCRIPT="$SCRIPT_DIR/scripts/vpn_control.sh"
 
 # Farben für die Ausgabe
 RED='\033[0;31m'
@@ -502,7 +503,8 @@ show_interactive_menu() {
     echo "  6) enhance          - Erweiterte Privacy-Funktionen"
     echo "  7) proxychains      - ProxyChains für Terminal einrichten"
     echo "  8) security         - Security-Analyse-Tools"
-    echo "  9) help             - Hilfe anzeigen"
+    echo "  9) vpn              - VPN mit Geo-Standort-Auswahl"
+    echo " 10) help             - Hilfe anzeigen"
     echo ""
     echo " 99) more             - Weitere Tools und Einstellungen"
     echo "  0) exit             - Beenden"
@@ -587,7 +589,10 @@ handle_interactive_input() {
             fi
             handle_security "$param"
             ;;
-        9|help)
+        9|vpn)
+            handle_vpn "$param"
+            ;;
+        10|help)
             show_banner
             show_help
             ;;
@@ -600,7 +605,51 @@ handle_interactive_input() {
             ;;
         *)
             echo -e "${RED}❌ Ungültige Eingabe: $choice${NC}"
-            echo "Bitte Nummer (0-9, 99) oder Funktionsname eingeben."
+            echo "Bitte Nummer (0-10, 99) oder Funktionsname eingeben."
+            return 1
+            ;;
+    esac
+}
+
+# VPN-Funktionen
+handle_vpn() {
+    local action="$1"
+    
+    if [ -z "$action" ]; then
+        echo ""
+        echo -e "${BLUE}🌍 VPN-Funktionen:${NC}"
+        echo "  menu      - Interaktives VPN-Menü"
+        echo "  status    - VPN-Status anzeigen"
+        echo "  location  - Aktueller Standort"
+        echo "  providers - Verfügbare Provider"
+        echo ""
+        read -p "Welche VPN-Funktion möchtest du? (menu/status/location/providers): " action
+    fi
+    
+    case "$action" in
+        menu|"")
+            "$VPN_SCRIPT" menu
+            ;;
+        status)
+            "$VPN_SCRIPT" status
+            ;;
+        location)
+            "$VPN_SCRIPT" location
+            ;;
+        providers)
+            "$VPN_SCRIPT" providers
+            ;;
+        connect)
+            shift
+            "$VPN_SCRIPT" connect "$@"
+            ;;
+        disconnect)
+            shift
+            "$VPN_SCRIPT" disconnect "$@"
+            ;;
+        *)
+            echo -e "${RED}❌ Unbekannte VPN-Aktion: $action${NC}"
+            echo "Verfügbare Aktionen: menu, status, location, providers, connect, disconnect"
             return 1
             ;;
     esac
@@ -647,7 +696,7 @@ main() {
         while true; do
             show_interactive_menu
             echo ""
-            read -p "Funktion wählen (1-9, 99 oder Name): " user_choice
+            read -p "Funktion wählen (1-10, 99 oder Name): " user_choice
             
             # Parse Eingabe (z.B. "3 ultra" oder "privacy ultra")
             choice=$(echo "$user_choice" | awk '{print $1}')
@@ -692,6 +741,9 @@ main() {
             ;;
         security)
             handle_security "$2"
+            ;;
+        vpn)
+            handle_vpn "$2"
             ;;
         help|-h|--help)
             show_banner
