@@ -1,297 +1,485 @@
 # xxxOS
 
-Privacy and anonymity utilities for macOS.
+**Privacy & Anonymity Tools for macOS**
 
-## Overview
+A comprehensive suite of command-line tools for enhancing privacy and anonymity on macOS systems.
 
-xxxOS provides a comprehensive suite of command-line tools for enhancing privacy on macOS systems:
+## 🎯 Overview
 
-- **MAC Address Spoofing**: Randomize your network interface's MAC address
-- **Tor Control**: Manage Tor service and system-wide proxy settings
-- **Enhanced Privacy**: DNS management, firewall control, browser data cleaning, and more
-- **Ultra Privacy Mode**: One-command maximum anonymity configuration
+xxxOS provides powerful privacy tools with an intuitive interface:
 
-## Installation
+- **🧅 Tor Integration**: Complete Tor service management with proxy configuration
+- **🔀 MAC Address Spoofing**: Randomize network interface MAC addresses
+- **🛡️ Enhanced Privacy**: DNS management, firewall control, and tracking protection
+- **🔒 Ultra Privacy Mode**: One-command maximum anonymity configuration
+- **🔍 Security Analysis**: Defensive security tools and vulnerability scanning
+- **📊 Privacy Level Tracking**: Real-time privacy status monitoring with scoring
+- **🌐 StatusBar Integration**: macOS menu bar status for Tor connection
+- **🕵️ TorShell**: Proxified terminal environment with custom icons
+
+## 📦 Installation
 
 ### Prerequisites
 
-1. macOS operating system
-2. Homebrew package manager
-3. Install required dependencies:
+**Required:**
+- macOS (tested on macOS 15.5+)
+- Homebrew package manager
+- Administrator privileges (sudo access)
+
+**Install Dependencies:**
 
 ```bash
+# Install Homebrew (if not already installed)
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+
 # Install Tor
 brew install tor
 
-# Install OpenSSL (usually pre-installed)
-brew install openssl
-
-# Install ProxyChains for terminal routing (required for Tor Shell)
-brew install proxychains-ng
-
-# Install wget for reliable proxy routing
-brew install wget
-
-# Optional: Install jq for better status output
+# Install jq for JSON parsing (optional but recommended)
 brew install jq
+
+# Install ProxyChains4 (optional - for terminal proxying)
+brew install proxychains-ng
 ```
 
-### Setup
+### Download & Setup
 
 ```bash
-# Clone or download xxxOS
-cd /path/to/xxxOS
+# Clone the repository
+git clone https://github.com/your-username/xxxOS.git
+cd xxxOS
 
 # Make scripts executable
-chmod +x xxxos
+chmod +x xxxos.sh
 chmod +x scripts/*.sh
 
-# Run initial setup (installs ProxyChains configuration)
-./xxxos proxychains
+# Optional: Add to PATH for global access
+echo 'export PATH="$PATH:$(pwd)"' >> ~/.zshrc
+source ~/.zshrc
 ```
 
-## Usage
-
-### Quick Start with xxxos
-
-The main control script `xxxos` provides easy access to all privacy features:
+### Quick Test
 
 ```bash
-# Show help
-./xxxos help
+# Run xxxOS
+./xxxos.sh
 
-# Check overall privacy status
-./xxxos status
+# Check status
+./xxxos.sh status
 
-# Basic privacy mode (MAC + Tor)
-./xxxos privacy on
-
-# Ultra privacy mode (ALL features + ProxyChains)
-./xxxos privacy ultra
-
-# Check privacy status
-./xxxos privacy status
+# Quick help
+./xxxos.sh help
 ```
 
-### Individual Features
+## 🚀 Usage
 
-#### MAC Address Spoofing
+### Interactive Mode
 
 ```bash
-# Change MAC address (requires sudo)
-./xxxos mac
+./xxxos.sh
 ```
 
-#### Tor Control
+Launches the main menu with all available functions.
+
+### Command Line Mode
 
 ```bash
-# Tor management
-./xxxos tor start          # Start Tor service
-./xxxos tor stop           # Stop Tor service
-./xxxos tor status         # Check status
-./xxxos tor full-on        # Start Tor + enable system proxy
-./xxxos tor full-off       # Stop Tor + disable system proxy
-./xxxos tor test           # Test connection
+# Status and Information
+./xxxos.sh status              # Complete privacy status overview
+./xxxos.sh ipinfo              # Detailed IP information and location
+
+# Tor Control
+./xxxos.sh tor start           # Start Tor service
+./xxxos.sh tor stop            # Stop Tor service
+./xxxos.sh tor status          # Tor connection status
+./xxxos.sh tor full-on         # Start Tor + enable system proxy
+./xxxos.sh tor full-off        # Stop Tor + disable proxy
+./xxxos.sh tor test            # Test Tor connection
+
+# Privacy Modes
+./xxxos.sh privacy on          # Basic privacy (MAC + Tor)
+./xxxos.sh privacy off         # Disable privacy features
+./xxxos.sh privacy status      # Privacy status overview
+./xxxos.sh privacy ultra       # Maximum privacy configuration
+
+# MAC Address Spoofing
+./xxxos.sh mac                 # Randomize MAC address (requires sudo)
+
+# Enhanced Privacy Features
+./xxxos.sh enhance dns-clear      # Clear DNS cache
+./xxxos.sh enhance hostname       # Randomize hostname
+./xxxos.sh enhance browser-clear  # Clear browser data
+./xxxos.sh enhance firewall       # Enable firewall + stealth mode
+./xxxos.sh enhance dns-privacy    # Set privacy DNS servers
+./xxxos.sh enhance block-tracking # Block tracking domains
+./xxxos.sh enhance all           # Enable all privacy features
+
+# Security Analysis
+./xxxos.sh security system     # System security analysis
+./xxxos.sh security network    # Network security scan
+./xxxos.sh security dns        # DNS security check
+./xxxos.sh security privacy    # Privacy audit
+./xxxos.sh security vuln       # Vulnerability assessment
+./xxxos.sh security full       # Complete security analysis
+
+# Additional Tools
+./xxxos.sh proxychains         # Setup ProxyChains4 for terminal
+./xxxos.sh more                # Additional tools and settings
 ```
 
-#### Enhanced Privacy Features
+## 🔧 Main Menu Functions
 
-```bash
-# DNS and network
-./xxxos enhance dns-clear      # Clear DNS cache
-./xxxos enhance dns-privacy    # Set privacy DNS (Cloudflare)
-./xxxos enhance hostname       # Randomize hostname
+### 1) Status - Privacy Overview
+- **Real-time privacy level scoring** (0-10 points)
+- **MAC address status** with randomization indicator
+- **Tor service status** and connection verification
+- **Firewall configuration** and stealth mode
+- **DNS server privacy** assessment
+- **System identification** (hostname)
+- **Tracking protection** status
+- **Location services** status
 
-# Browser privacy
-./xxxos enhance browser-clear  # Clear browser data (with confirmation)
+**Privacy Level System:**
+- **🟩 MAXIMUM** (9-10 points): Tor active + all privacy features
+- **🟩 HOCH** (7-8 points): Tor active + most features
+- **🟨 MITTEL** (4-6 points): Tor active + basic features  
+- **🟨 NIEDRIG** (2-3 points): Some features without Tor
+- **🟥 MINIMAL** (1 point): Very few protections
+- **🟥 KEINE** (0 points): No privacy protections
 
-# System security
-./xxxos enhance firewall       # Enable firewall with stealth mode
-./xxxos enhance block-tracking # Block tracking domains
+*Note: Without Tor active, maximum level is limited to "NIEDRIG"*
 
-# All enhanced features
-./xxxos enhance all           # Activate all privacy features
+### 2) IP Info - Network Information
+- **Current public IP address** and geolocation
+- **ISP and organization** information
+- **Tor connection verification** via check.torproject.org
+- **DNS leak testing** and resolver information
+- **WebRTC leak detection** warnings
+- **VPN/Proxy detection** status
 
-# ProxyChains setup
-./xxxos proxychains           # Setup ProxyChains for terminal use
-```
+### 3) Privacy - Privacy Modes
 
-### Tor Shell Usage
+**Available Modes:**
+- **`on`**: Basic Privacy
+  - Randomize MAC address
+  - Start Tor service
+  - Enable system proxy
+  
+- **`off`**: Disable Privacy
+  - Stop Tor service  
+  - Disable system proxy
+  - Keep MAC address as-is
+  
+- **`status`**: Show current privacy configuration
 
-After running `./xxxos privacy ultra`, you get access to a dedicated Tor shell:
+- **`ultra`**: Maximum Privacy
+  - All features from basic mode
+  - Set privacy DNS servers (Cloudflare/Quad9)
+  - Enable firewall with stealth mode
+  - Clear DNS cache
+  - Randomize hostname
+  - Block tracking domains
+  - Clear browser data
 
-```bash
-# Start Tor shell (all commands route through Tor automatically)
-torshell
+### 4) Tor - Tor Network Control
 
-# In Tor shell:
-checkip                       # Shows Tor status {"IsTor":true}
-myip                         # Shows current Tor IP
-curl https://example.com     # Automatically via Tor
-git clone https://...        # Automatically via Tor
-wget https://...             # Automatically via Tor
-exit                         # Exit Tor shell
+**Actions:**
+- **`start`**: Start Tor service only
+- **`stop`**: Stop Tor service and kill processes  
+- **`status`**: Detailed Tor connection status
+- **`proxy-on`**: Enable system-wide SOCKS proxy
+- **`proxy-off`**: Disable system proxy
+- **`full-on`**: Start Tor + enable proxy (recommended)
+- **`full-off`**: Stop everything
+- **`test`**: Test Tor connection and show exit node
 
-# Individual Tor commands (from normal shell)
-torcheck                     # Check Tor connection status
-torcurl https://example.com  # Single curl command via Tor
-```
-
-## Privacy Modes
-
-### Basic Privacy Mode (`./xxxos privacy on`)
-1. Changes MAC address to random value
-2. Starts Tor service
-3. Enables system-wide SOCKS proxy
-4. Tests Tor connection
-
-### Ultra Privacy Mode (`./xxxos privacy ultra`)
-Activates ALL privacy features:
-1. **MAC Address Spoofing** - Random hardware address
-2. **DNS Cache Clearing** - Removes DNS history
-3. **Hostname Randomization** - Changes system identifier
-4. **Browser Data Cleaning** - Clears history, cookies, cache (with confirmation)
-5. **Firewall Activation** - Stealth mode enabled
-6. **Privacy DNS** - Cloudflare (1.1.1.1)
-7. **Tracking Protection** - Blocks ad/tracking domains
-8. **Location Services** - Disabled
-9. **Tor Network** - Full anonymization
-10. **ProxyChains Setup** - Terminal command routing through Tor
-11. **Tor Shell** - Dedicated shell where all commands use Tor automatically
-
-## Features Details
-
-### Network Privacy
-- **MAC Spoofing**: Cryptographically random MAC addresses
-- **DNS Management**: Cache clearing and privacy-focused DNS servers
-- **Hostname Randomization**: Prevents device fingerprinting
-- **Firewall**: macOS firewall with stealth mode
-
-### Browser Privacy
-- Supports Safari, Chrome, and Firefox
-- Clears browsing history, cookies, and cache
-- Preserves saved passwords
-- Requires user confirmation before deletion
-
-### Tor Integration
-- Manages Tor service via Homebrew
-- Configures macOS system proxy settings
-- Auto-detects Wi-Fi network interface
+**Technical Details:**
+- Uses Homebrew Tor service management
 - SOCKS5 proxy on port 9050
-- Connection testing via check.torproject.org
+- Configures macOS network settings
+- Verifies connection via Tor Project API
 
-### Tracking Protection
-- Blocks common tracking domains via hosts file
-- Includes Google Analytics, Facebook, DoubleClick, etc.
-- Creates automatic backups before modification
+### 5) MAC - MAC Address Spoofing
 
-### ProxyChains Integration
-- Configures ProxyChains for reliable Tor routing
-- Handles macOS-specific networking limitations
-- Provides wrapper scripts for seamless command-line usage
-- Includes dedicated Tor shell with automatic routing
+**Features:**
+- **Automatic interface detection** (defaults to en0/Wi-Fi)
+- **OpenSSL-based randomization** for realistic MAC addresses
+- **Temporary Wi-Fi disconnection** during change process
+- **Vendor prefix preservation** option
+- **Requires sudo privileges**
 
-### Tor Shell Features
-- **Automatic Routing**: All network commands (`curl`, `git`, `wget`, etc.) automatically use Tor
-- **Visual Indicators**: Prompt shows `🧅[TOR]` to indicate Tor mode
-- **Built-in Commands**: `checkip` for connection testing, `myip` for IP display
-- **Session Management**: Clean entry/exit with session preservation
-- **Command Compatibility**: Works with standard tools without syntax changes
+**Process:**
+1. Detect active network interface
+2. Generate random MAC address
+3. Temporarily disable Wi-Fi
+4. Apply new MAC address
+5. Re-enable Wi-Fi
+6. Verify change successful
 
-## Technical Details
+### 6) Enhance - Extended Privacy Features
 
-- **MAC Spoofing**: Uses OpenSSL for secure random generation, ensures unicast addresses
-- **Tor Integration**: Leverages macOS `networksetup` for system-wide proxy configuration
-- **Network Interface**: Defaults to `en0` (Wi-Fi), auto-detection for Tor proxy
-- **ProxyChains Configuration**: Custom config optimized for Tor routing at `/opt/homebrew/etc/proxychains.conf`
-- **Tor Shell Implementation**: Uses PATH manipulation with wrapper scripts in `/tmp/tor_wrappers/`
-- **Command Routing**: `curl` requests routed through `wget` for reliable proxy support
+**Individual Functions:**
+- **`dns-clear`**: Flush system DNS cache
+- **`hostname`**: Set random hostname  
+- **`browser-clear`**: Clear Safari/Chrome data
+- **`firewall`**: Enable macOS firewall + stealth mode
+- **`dns-privacy`**: Configure Cloudflare/Quad9 DNS
+- **`block-tracking`**: Update hosts file with ad/tracker blocks
+- **`all`**: Apply all enhancement features
 
-## Project Structure
+**DNS Privacy Servers:**
+- Cloudflare: 1.1.1.1, 1.0.0.1
+- Quad9: 9.9.9.9, 149.112.112.112
+
+### 7) ProxyChains - Terminal Proxying
+
+**Setup:**
+- Installs and configures ProxyChains4
+- Creates wrapper scripts for common tools
+- Provides `torshell` command for proxified terminal
+- Supports curl, wget, ssh, nmap, and more
+
+**TorShell Features:**
+- Isolated terminal environment
+- All traffic routed through Tor
+- Custom shell prompt with Tor indicator
+- Built-in connection testing commands
+- Support for security tools
+
+### 8) Security - Security Analysis Tools
+
+**Analysis Types:**
+- **`system`**: System security assessment
+  - Firewall status and configuration
+  - System Integrity Protection (SIP)
+  - Gatekeeper and XProtect status
+  - FileVault encryption status
+  - Suspicious process detection
+  
+- **`network`**: Network security scan
+  - Open port scanning
+  - Network interface analysis
+  - Active connection monitoring
+  - Firewall rule assessment
+  
+- **`dns`**: DNS security analysis
+  - DNS server security assessment
+  - DNS leak testing
+  - DNSSEC validation check
+  - DNS over HTTPS status
+  
+- **`privacy`**: Privacy audit
+  - Location services assessment
+  - Application permissions audit
+  - Privacy-sensitive file analysis
+  - Tracking protection verification
+  
+- **`vuln`**: Vulnerability assessment
+  - System update status
+  - Known vulnerability checks
+  - Security configuration review
+  - Outdated software detection
+  
+- **`full`**: Complete security analysis (all above)
+
+### 9) Help - Documentation
+
+Shows complete command-line usage and examples.
+
+### 99) More - Additional Tools
+
+**Current Tools:**
+- **TorShell Icon Changer**: Customize your TorShell prompt
+  - 12 different icons available
+  - Interactive selection or direct setting
+  - Icons: 🧅🔒🛡️🕶️🕵️🎭👤🌐⚡🔐🥷👻
+
+**Usage:**
+```bash
+# Interactive icon selection
+./xxxos.sh more
+→ 1 (torshell-icon)
+
+# Direct icon setting
+./scripts/torshell_icon.sh set 11  # Sets ninja icon 🥷
+```
+
+## 🍎 macOS StatusBar Integration
+
+### SwiftBar Setup
+
+**Install SwiftBar:**
+```bash
+brew install --cask swiftbar
+```
+
+**Install Tor Status Plugin:**
+```bash
+# Copy plugin to SwiftBar directory
+cp scripts/tor_statusbar.sh ~/Library/Application\ Support/SwiftBar/Plugins/tor_status.5s.sh
+
+# Or if you use custom plugin directory:
+cp scripts/tor_statusbar.sh /your/swiftbar/plugins/tor_status.5s.sh
+```
+
+**StatusBar Features:**
+- **🧅 TOR** - Connected and active
+- **🟡 TOR** - Running but not connected
+- **⚫ TOR** - Offline
+
+**Dropdown Menu:**
+- Current IP and Tor status
+- Quick Tor start/stop actions
+- Privacy mode controls
+- Security analysis access
+- Direct xxxOS launcher
+
+## 🔐 Security Considerations
+
+**Permissions Required:**
+- **Sudo access**: Required for MAC address changes
+- **Network configuration**: For system proxy settings
+- **Firewall management**: For security enhancements
+
+**Privacy Notes:**
+- MAC spoofing requires Wi-Fi disconnection
+- System proxy affects Safari but not all applications
+- DNS changes affect all network traffic
+- Firewall changes require administrator privileges
+
+**Limitations:**
+- Some applications bypass system proxy
+- VPN software may conflict with Tor
+- Corporate networks may block Tor
+- Browser fingerprinting still possible
+
+## 🛠️ Advanced Configuration
+
+### Custom DNS Servers
+
+Edit `scripts/privacy_enhance.sh` to add custom DNS servers:
+
+```bash
+# Add your preferred DNS servers
+DNS_SERVERS=("1.1.1.1" "1.0.0.1" "your.custom.dns")
+```
+
+### ProxyChains Configuration
+
+Customize `~/.proxychains/proxychains.conf`:
+
+```
+[ProxyList]
+socks5 127.0.0.1 9050
+# Add additional proxies here
+```
+
+### TorShell Customization
+
+Modify TorShell environment in `scripts/torshell_wrapper.sh`:
+
+```bash
+# Add custom aliases
+alias myip='curl --socks5 localhost:9050 http://icanhazip.com'
+alias checkip='curl --socks5 localhost:9050 https://check.torproject.org/api/ip'
+```
+
+## 🔧 Troubleshooting
+
+### Common Issues
+
+**Tor won't start:**
+```bash
+# Check if Tor is already running
+pgrep tor
+
+# Force kill and restart
+brew services stop tor
+killall tor
+brew services start tor
+```
+
+**MAC address won't change:**
+```bash
+# Check interface name
+networksetup -listallhardwareports
+
+# Run with correct interface
+sudo ./scripts/mac_spoofer.sh en1  # if not en0
+```
+
+**StatusBar not showing:**
+```bash
+# Refresh SwiftBar
+# Click SwiftBar icon → "Refresh All"
+
+# Check plugin location
+ls -la ~/Library/Application\ Support/SwiftBar/Plugins/
+```
+
+**Permission denied errors:**
+```bash
+# Make scripts executable
+chmod +x xxxos.sh scripts/*.sh
+
+# For MAC spoofing, ensure sudo access
+sudo ./xxxos.sh mac
+```
+
+### Debug Mode
+
+Enable verbose output:
+
+```bash
+# Set debug flag
+export XXXOS_DEBUG=1
+./xxxos.sh status
+```
+
+## 📁 Project Structure
 
 ```
 xxxOS/
-├── xxxos                           # Main control script
+├── xxxos.sh                    # Main control script
+├── README.md                   # This documentation
+├── CLAUDE.md                   # AI assistant instructions
 ├── scripts/
-│   ├── mac_spoofer.sh             # MAC address randomization
-│   ├── tor_control.sh             # Tor service management
-│   ├── privacy_enhance.sh         # Enhanced privacy features
-│   ├── proxychains_setup.sh       # ProxyChains configuration
-│   └── torshell_wrapper.sh        # Alternative Tor shell implementation
-├── CLAUDE.md                      # Development guidance
-└── README.md                      # This file
+│   ├── tor_control.sh         # Tor service management
+│   ├── mac_spoofer.sh         # MAC address randomization
+│   ├── privacy_enhance.sh     # Enhanced privacy features
+│   ├── proxychains_setup.sh   # ProxyChains configuration
+│   ├── security_tools.sh      # Security analysis tools
+│   ├── torshell_wrapper.sh    # TorShell environment
+│   ├── torshell_icon.sh       # TorShell icon customization
+│   ├── tor_statusbar.sh       # StatusBar plugin
+│   └── statusbar_wrappers.sh  # StatusBar action wrappers
 ```
 
-## Security Recommendations
+## 🤝 Contributing
 
-For maximum anonymity:
-1. Use **Tor Browser** instead of regular browsers
-2. Disable **WebRTC** in your browser (prevents IP leaks)
-3. Disable **JavaScript** when possible
-4. Consider using **Tails OS** for critical operations
-5. Use the **Tor Shell** (`torshell`) for command-line operations
-6. Regularly clear browser data and cookies
-7. Avoid logging into personal accounts while anonymous
-8. Test your anonymity with `checkip` before sensitive operations
-9. Use `./xxxos status` to verify all privacy features are active
+Contributions welcome! Please:
 
-## Limitations
+1. Fork the repository
+2. Create a feature branch
+3. Test thoroughly on macOS
+4. Submit a pull request
 
-- System proxy settings affect Safari and system apps, but not all applications
-- Some command-line tools may bypass ProxyChains (use Tor Shell for reliable routing)
-- MAC address changes are temporary and reset on reboot
-- Some websites may block Tor exit nodes
-- Browser fingerprinting can still identify you (use Tor Browser)
-- WebRTC can leak your real IP (must be disabled manually)
-- Browser data clearing requires manual confirmation for safety
+## ⚖️ License
 
-## Known Issues
+MIT License - See LICENSE file for details.
 
-- `curl` on macOS may bypass ProxyChains in some configurations
-- **Solution**: Use the Tor Shell (`torshell`) for guaranteed Tor routing
-- Tor Shell uses `wget` as backend for reliable proxy routing
-- Browser data clearing requires manual confirmation for safety (prevents accidental data loss)
+## ⚠️ Disclaimer
 
-## Dependencies
+This software is for educational and legitimate privacy purposes only. Users are responsible for complying with local laws and regulations. The authors are not responsible for any misuse of this software.
 
-**Required:**
-- Tor (via Homebrew)
-- ProxyChains-NG (via Homebrew) 
-- wget (via Homebrew)
-- OpenSSL (usually pre-installed)
+## 🔗 Resources
 
-**Optional:**
-- jq (for better JSON output formatting)
+- [Tor Project](https://www.torproject.org/)
+- [Homebrew](https://brew.sh/)
+- [SwiftBar](https://swiftbar.app/)
+- [ProxyChains](https://github.com/haad/proxychains)
+- [macOS Privacy Guide](https://github.com/drduh/macOS-Security-and-Privacy-Guide)
 
-**System Requirements:**
-- macOS (tested on Apple Silicon and Intel)
-- Homebrew package manager
-- Administrator privileges (for MAC spoofing and system configuration)
+---
 
-## Author
-
-Martin Pfeffer (2025)
-
-## License
-
-MIT License
-
-Copyright (c) 2025 Martin Pfeffer
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
+**Built with ❤️ for macOS Privacy**

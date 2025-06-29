@@ -389,17 +389,31 @@ show_overall_status() {
     grep -q "# xxxOS Privacy Block List" /etc/hosts 2>/dev/null && privacy_score=$((privacy_score + 1))
     ! pgrep -x "locationd" > /dev/null 2>&1 && privacy_score=$((privacy_score + 1))
     
+    # Privacy-Level-Anzeige (ohne Tor maximal NIEDRIG)
+    local tor_active=false
+    [ "$tor_running" = "0" ] && ([ "$is_tor" = "true" ] || [ -n "$proxy_active" ]) && tor_active=true
+    
     echo -n "Privacy-Level: "
-    if [ $privacy_score -ge 9 ]; then
-        echo -e "${GREEN}⬛⬛⬛⬛⬛ MAXIMUM${NC}"
-    elif [ $privacy_score -ge 7 ]; then
-        echo -e "${GREEN}⬛⬛⬛⬛⬜ HOCH${NC}"
-    elif [ $privacy_score -ge 4 ]; then
-        echo -e "${YELLOW}⬛⬛⬛⬜⬜ MITTEL${NC}"
-    elif [ $privacy_score -ge 2 ]; then
-        echo -e "${YELLOW}⬛⬛⬜⬜⬜ NIEDRIG${NC}"
+    if [ "$tor_active" = true ]; then
+        # Mit Tor: Volle Skala möglich
+        if [ $privacy_score -ge 9 ]; then
+            echo -e "${GREEN}⬛⬛⬛⬛⬛ MAXIMUM${NC}"
+        elif [ $privacy_score -ge 7 ]; then
+            echo -e "${GREEN}⬛⬛⬛⬛⬜ HOCH${NC}"
+        elif [ $privacy_score -ge 4 ]; then
+            echo -e "${YELLOW}⬛⬛⬛⬜⬜ MITTEL${NC}"
+        else
+            echo -e "${YELLOW}⬛⬛⬜⬜⬜ NIEDRIG${NC}"
+        fi
     else
-        echo -e "${RED}⬛⬜⬜⬜⬜ MINIMAL${NC}"
+        # Ohne Tor: Maximal NIEDRIG
+        if [ $privacy_score -ge 4 ]; then
+            echo -e "${YELLOW}⬛⬛⬜⬜⬜ NIEDRIG${NC} (⚠️ Tor inaktiv)"
+        elif [ $privacy_score -ge 2 ]; then
+            echo -e "${RED}⬛⬜⬜⬜⬜ MINIMAL${NC}"
+        else
+            echo -e "${RED}⬜⬜⬜⬜⬜ KEINE${NC}"
+        fi
     fi
     echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 }
@@ -489,6 +503,8 @@ show_interactive_menu() {
     echo "  7) proxychains      - ProxyChains für Terminal einrichten"
     echo "  8) security         - Security-Analyse-Tools"
     echo "  9) help             - Hilfe anzeigen"
+    echo ""
+    echo " 99) more             - Weitere Tools und Einstellungen"
     echo "  0) exit             - Beenden"
     echo ""
 }
@@ -575,13 +591,49 @@ handle_interactive_input() {
             show_banner
             show_help
             ;;
+        99|more)
+            handle_sonstiges "$param"
+            ;;
         0|exit)
             echo "👋 Auf Wiedersehen!"
             exit 0
             ;;
         *)
             echo -e "${RED}❌ Ungültige Eingabe: $choice${NC}"
-            echo "Bitte Nummer (0-9) oder Funktionsname eingeben."
+            echo "Bitte Nummer (0-9, 99) oder Funktionsname eingeben."
+            return 1
+            ;;
+    esac
+}
+
+# More-Menü
+handle_sonstiges() {
+    echo -e "${BLUE}🔧 MORE${NC}"
+    echo "============="
+    echo ""
+    echo "Zusätzliche Tools und Einstellungen:"
+    echo ""
+    echo "  1) torshell-icon    - Tor-Shell Icon ändern"
+    echo "  2) zurück           - Zurück zum Hauptmenü"
+    echo ""
+    
+    if [ -z "$1" ]; then
+        read -p "Welche Funktion möchtest du? (1-2): " choice
+    else
+        choice="$1"
+    fi
+    
+    case "$choice" in
+        1|torshell-icon|icon)
+            echo ""
+            "$SCRIPT_DIR/scripts/torshell_icon.sh"
+            ;;
+        2|zurück|back)
+            return 0
+            ;;
+        *)
+            echo -e "${RED}❌ Ungültige Eingabe: $choice${NC}"
+            echo "Bitte Nummer (1-2) eingeben."
             return 1
             ;;
     esac
@@ -592,17 +644,28 @@ main() {
     check_scripts
     
     if [ $# -eq 0 ]; then
-        show_interactive_menu
-        echo ""
-        read -p "Funktion wählen (1-9 oder Name): " user_choice
-        
-        # Parse Eingabe (z.B. "3 ultra" oder "privacy ultra")
-        choice=$(echo "$user_choice" | awk '{print $1}')
-        param=$(echo "$user_choice" | awk '{print $2}')
-        
-        echo ""
-        handle_interactive_input "$choice" "$param"
-        exit $?
+        while true; do
+            show_interactive_menu
+            echo ""
+            read -p "Funktion wählen (1-9, 99 oder Name): " user_choice
+            
+            # Parse Eingabe (z.B. "3 ultra" oder "privacy ultra")
+            choice=$(echo "$user_choice" | awk '{print $1}')
+            param=$(echo "$user_choice" | awk '{print $2}')
+            
+            # Exit-Befehle behandeln
+            if [[ "$choice" == "0" || "$choice" == "exit" || "$choice" == "quit" ]]; then
+                echo "Auf Wiedersehen!"
+                exit 0
+            fi
+            
+            echo ""
+            handle_interactive_input "$choice" "$param"
+            
+            echo ""
+            echo "Drücke Enter um zum Hauptmenü zurückzukehren..."
+            read -r
+        done
     fi
     
     case "$1" in
