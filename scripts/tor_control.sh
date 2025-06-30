@@ -81,11 +81,11 @@ show_status() {
         echo "System-Proxy: ❌ Deaktiviert"
     fi
     
-    # Connection Test
+    # Connection Test - Mit korrekter SOCKS5 und IPv4
     echo ""
     echo "🔍 Verbindungstest:"
-    local current_ip=$(curl -s --connect-timeout 5 https://check.torproject.org/api/ip 2>/dev/null | jq -r '.IP' 2>/dev/null || echo "Fehler")
-    local is_tor=$(curl -s --connect-timeout 5 https://check.torproject.org/api/ip 2>/dev/null | jq -r '.IsTor' 2>/dev/null || echo "false")
+    local current_ip=$(curl -4 -s --connect-timeout 5 --socks5 localhost:9050 https://check.torproject.org/api/ip 2>/dev/null | jq -r '.IP' 2>/dev/null || echo "Fehler")
+    local is_tor=$(curl -4 -s --connect-timeout 5 --socks5 localhost:9050 https://check.torproject.org/api/ip 2>/dev/null | jq -r '.IsTor' 2>/dev/null || echo "false")
     
     if [ "$is_tor" = "true" ]; then
         echo "Aktuelle IP: $current_ip (🔒 über Tor)"
@@ -97,9 +97,9 @@ show_status() {
 test_connection() {
     echo "🧪 Teste Tor-Verbindung..."
     
-    # Direkt über SOCKS5
+    # Direkt über SOCKS5 - IPv4 erzwingen
     echo "Test 1: Direkter SOCKS5-Test"
-    local socks_result=$(curl --socks5 localhost:9050 --connect-timeout 10 -s https://check.torproject.org/api/ip 2>/dev/null)
+    local socks_result=$(curl -4 --socks5 localhost:9050 --connect-timeout 10 -s https://check.torproject.org/api/ip 2>/dev/null)
     if echo "$socks_result" | grep -q '"IsTor":true'; then
         echo "✅ SOCKS5: Funktioniert"
         echo "$socks_result" | jq . 2>/dev/null || echo "$socks_result"
@@ -110,7 +110,7 @@ test_connection() {
     echo ""
     echo "Test 2: ProxyChains-Test"
     if command -v proxychains4 > /dev/null 2>&1; then
-        local proxy_result=$(proxychains4 curl --connect-timeout 10 -s https://check.torproject.org/api/ip 2>/dev/null)
+        local proxy_result=$(proxychains4 curl -4 --connect-timeout 10 -s https://check.torproject.org/api/ip 2>/dev/null)
         if echo "$proxy_result" | grep -q '"IsTor":true'; then
             echo "✅ ProxyChains: Funktioniert"
             echo "$proxy_result" | jq . 2>/dev/null || echo "$proxy_result"

@@ -312,8 +312,8 @@ show_overall_status() {
         else
             echo "    ├─ System-Proxy: ❌ Deaktiviert"
         fi
-        # IP-Check
-        is_tor=$(curl -s --connect-timeout 3 https://check.torproject.org/api/ip 2>/dev/null | jq -r '.IsTor' 2>/dev/null || echo "false")
+        # IP-Check - Korrekte Tor-Prüfung mit SOCKS5 und IPv4
+        is_tor=$(curl -4 -s --connect-timeout 3 --socks5 localhost:9050 https://check.torproject.org/api/ip 2>/dev/null | jq -r '.IsTor' 2>/dev/null || echo "false")
         if [ "$is_tor" = "true" ]; then
             echo "    └─ Verbindung: ✅ Über Tor"
         else
@@ -623,26 +623,30 @@ handle_vpn() {
     if [ -z "$action" ]; then
         echo ""
         echo -e "${BLUE}🌍 VPN-Funktionen:${NC}"
-        echo "  menu      - Interaktives VPN-Menü"
-        echo "  status    - VPN-Status anzeigen"
-        echo "  location  - Aktueller Standort"
-        echo "  providers - Verfügbare Provider"
+        echo "  1) menu      - Interaktives VPN-Menü"
+        echo "  2) status    - VPN-Status anzeigen"
+        echo "  3) location  - Aktueller Standort"
+        echo "  4) providers - Verfügbare Provider"
+        echo "  5) reset     - VPN zurücksetzen (bei Problemen)"
         echo ""
-        read -p "Welche VPN-Funktion möchtest du? (menu/status/location/providers): " action
+        read -p "Welche VPN-Funktion möchtest du? (1-5 oder Name): " action
     fi
     
     case "$action" in
-        menu|"")
+        1|menu|"")
             "$VPN_SCRIPT" menu
             ;;
-        status)
+        2|status)
             "$VPN_SCRIPT" status
             ;;
-        location)
+        3|location)
             "$VPN_SCRIPT" location
             ;;
-        providers)
+        4|providers)
             "$VPN_SCRIPT" providers
+            ;;
+        5|reset)
+            "$VPN_SCRIPT" reset
             ;;
         connect)
             shift
@@ -654,7 +658,7 @@ handle_vpn() {
             ;;
         *)
             echo -e "${RED}❌ Unbekannte VPN-Aktion: $action${NC}"
-            echo "Verfügbare Aktionen: menu, status, location, providers, connect, disconnect"
+            echo "Verfügbare Aktionen: 1-5, menu, status, location, providers, reset, connect, disconnect"
             return 1
             ;;
     esac
@@ -668,11 +672,12 @@ handle_sonstiges() {
     echo "Zusätzliche Tools und Einstellungen:"
     echo ""
     echo "  1) torshell-icon    - Tor-Shell Icon ändern"
-    echo "  2) zurück           - Zurück zum Hauptmenü"
+    echo "  2) statusbar        - StatusBar-Plugin installieren"
+    echo "  3) back             - Zurück zum Hauptmenü"
     echo ""
     
     if [ -z "$1" ]; then
-        read -p "Welche Funktion möchtest du? (1-2): " choice
+        read -p "Welche Funktion möchtest du? (1-3): " choice
     else
         choice="$1"
     fi
@@ -682,20 +687,33 @@ handle_sonstiges() {
             echo ""
             "$SCRIPT_DIR/scripts/torshell_icon.sh"
             ;;
-        2|zurück|back)
+        2|statusbar)
+            echo ""
+            "$SCRIPT_DIR/scripts/statusbar_installer.sh"
+            ;;
+        3|zurück|back)
             return 0
             ;;
         *)
             echo -e "${RED}❌ Ungültige Eingabe: $choice${NC}"
-            echo "Bitte Nummer (1-2) eingeben."
+            echo "Bitte Nummer (1-3) eingeben."
             return 1
             ;;
     esac
 }
 
+# StatusBar automatisch starten falls Plugin installiert
+auto_start_statusbar() {
+    # Launcher im Hintergrund ausführen
+    "$SCRIPT_DIR/scripts/statusbar_launcher.sh" 2>/dev/null &
+}
+
 # Hauptprogramm
 main() {
     check_scripts
+    
+    # StatusBar automatisch starten bei xxxOS-Start
+    auto_start_statusbar
     
     if [ $# -eq 0 ]; then
         while true; do

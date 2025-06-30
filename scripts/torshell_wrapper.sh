@@ -11,8 +11,18 @@ if ! lsof -i :9050 > /dev/null 2>&1; then
     exit 1
 fi
 
-# Teste Tor
-TOR_IP=$(proxychains4 -q curl -s https://check.torproject.org/api/ip 2>/dev/null | grep -o '"IP":"[^"]*' | cut -d'"' -f4)
+# IPv6-Check und Warnung
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+ipv6_status=$("$SCRIPT_DIR/ipv6_disable.sh" status 2>/dev/null | grep -q "vollständig deaktiviert" && echo "disabled" || echo "enabled")
+
+if [ "$ipv6_status" = "enabled" ]; then
+    echo "⚠️  IPv6 ist aktiv - Dies kann zu Tor-Leaks führen!"
+    echo "   Tipp: IPv6 deaktivieren mit: $SCRIPT_DIR/ipv6_disable.sh disable"
+    echo ""
+fi
+
+# Teste Tor mit IPv4
+TOR_IP=$(proxychains4 -q curl -4 -s https://check.torproject.org/api/ip 2>/dev/null | grep -o '"IP":"[^"]*' | cut -d'"' -f4)
 echo "✅ Tor-IP: $TOR_IP"
 echo ""
 
@@ -20,10 +30,10 @@ echo ""
 WRAPPER_DIR="/tmp/xxxos_tor_wrappers_$$"
 mkdir -p "$WRAPPER_DIR"
 
-# curl wrapper
+# curl wrapper - IPv6 deaktiviert für Tor-Kompatibilität
 cat > "$WRAPPER_DIR/curl" << 'EOF'
 #!/bin/bash
-exec proxychains4 -q /usr/bin/curl "$@"
+exec proxychains4 -q /usr/bin/curl -4 "$@"
 EOF
 
 # git wrapper  
@@ -32,10 +42,10 @@ cat > "$WRAPPER_DIR/git" << 'EOF'
 exec proxychains4 -q /usr/bin/git "$@"
 EOF
 
-# wget wrapper
+# wget wrapper - IPv6 deaktiviert für Tor-Kompatibilität
 cat > "$WRAPPER_DIR/wget" << 'EOF'
 #!/bin/bash
-exec proxychains4 -q /usr/bin/wget "$@"
+exec proxychains4 -q /usr/bin/wget --inet4-only "$@"
 EOF
 
 # npm wrapper

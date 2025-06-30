@@ -305,11 +305,64 @@ connect_vpn() {
             ;;
         "mullvad")
             if command -v mullvad >/dev/null 2>&1; then
-                mullvad relay set location "$country"
-                mullvad connect
-                if [ $? -eq 0 ]; then
-                    echo -e "${GREEN}✅ Erfolgreich verbunden via Mullvad${NC}"
-                    return 0
+                # Mullvad-spezifische Vorbereitung
+                echo -e "${BLUE}📋 Bereite Mullvad-Verbindung vor...${NC}"
+                
+                # Account-Status prüfen
+                if ! mullvad account get 2>/dev/null | grep -q "Paid until\|Account:"; then
+                    echo -e "${RED}❌ Mullvad-Account nicht eingeloggt oder ungültig${NC}"
+                    echo ""
+                    echo "Bitte führe aus:"
+                    echo "  mullvad account login <account-number>"
+                    echo "  oder überprüfe dein Guthaben mit: mullvad account get"
+                    return 1
+                fi
+                
+                # Lockdown-Modus deaktivieren falls aktiv
+                mullvad lockdown-mode set off 2>/dev/null
+                
+                # DNS auf System-DNS zurücksetzen vor Verbindung
+                mullvad dns set default 2>/dev/null
+                
+                # Location setzen
+                echo -e "${BLUE}🌍 Setze Standort auf $country...${NC}"
+                if mullvad relay set location "$country" 2>/dev/null; then
+                    echo -e "${BLUE}🔗 Verbinde zu Mullvad...${NC}"
+                    mullvad connect
+                    
+                    # Warte auf Verbindung
+                    sleep 3
+                    
+                    # Verbindung prüfen
+                    local status=$(mullvad status 2>/dev/null)
+                    if echo "$status" | grep -q "Connected"; then
+                        echo -e "${GREEN}✅ Erfolgreich verbunden via Mullvad${NC}"
+                        echo "$status"
+                        return 0
+                    else
+                        echo -e "${RED}❌ Mullvad-Verbindung fehlgeschlagen${NC}"
+                        echo "Status: $status"
+                        
+                        # Automatische Fehlerbehebung versuchen
+                        echo -e "${YELLOW}🔧 Versuche Fehlerbehebung...${NC}"
+                        mullvad relay set location any 2>/dev/null
+                        mullvad disconnect 2>/dev/null
+                        sleep 2
+                        mullvad relay set location "$country" 2>/dev/null
+                        mullvad connect 2>/dev/null
+                        
+                        sleep 3
+                        status=$(mullvad status 2>/dev/null)
+                        if echo "$status" | grep -q "Connected"; then
+                            echo -e "${GREEN}✅ Verbindung nach Neuversuch erfolgreich${NC}"
+                            return 0
+                        fi
+                        return 1
+                    fi
+                else
+                    echo -e "${RED}❌ Ungültiger Länder-Code für Mullvad: $country${NC}"
+                    echo "Verfügbare Länder anzeigen mit: ./vpn_control.sh countries mullvad"
+                    return 1
                 fi
             fi
             ;;
@@ -386,6 +439,9 @@ disconnect_vpn() {
     esac
     
     echo -e "${GREEN}✅ VPN getrennt${NC}"
+    
+    # Netzwerk-Wiederherstellung nach VPN-Trennung
+    reset_network_after_vpn
 }
 
 # Aktuellen Standort und IP anzeigen
@@ -417,6 +473,136 @@ show_location() {
     echo -e "${BLUE}🔍 DNS-Leak-Check:${NC}"
     local dns_servers=$(nslookup google.com 2>/dev/null | grep "Server:" | awk '{print $2}')
     echo "DNS-Server: $dns_servers"
+}
+
+# Netzwerk zurücksetzen und reparieren
+reset_network_after_vpn() {
+    echo -e "${YELLOW}🔧 Stelle Netzwerkverbindung wieder her...${NC}"
+    
+    # 1. Mullvad-spezifische Resets
+    if command -v mullvad >/dev/null 2>&1; then
+        # Lockdown-Modus deaktivieren (Kill-Switch)
+        mullvad lockdown-mode set off 2>/dev/null
+        # Auto-Connect deaktivieren
+        mullvad auto-connect set off 2>/dev/null
+        # DNS auf System zurücksetzen
+        mullvad dns set default 2>/dev/null
+    fi
+    
+    # 2. DNS-Cache leeren
+    sudo dscacheutil -flushcache 2>/dev/null
+    sudo killall -HUP mDNSResponder 2>/dev/null
+    
+    # 3. Netzwerk-Interface neu starten
+    local wifi_interface=$(networksetup -listallhardwareports | awk '/Wi-Fi/{getline; print $2}')
+    if [ -n "$wifi_interface" ]; then
+        # Wi-Fi aus- und wieder einschalten
+        sudo ifconfig "$wifi_interface" down
+        sleep 1
+        sudo ifconfig "$wifi_interface" up
+        sleep 2
+    fi
+    
+    # 4. DNS auf Standard zurücksetzen
+    if [ -n "$wifi_interface" ]; then
+        # DNS auf automatisch (DHCP) setzen
+        sudo networksetup -setdnsservers Wi-Fi "Empty" 2>/dev/null
+    fi
+    
+    # 5. Routing-Tabelle prüfen und VPN-Routes entfernen
+    # Entferne alle Routes die über tun/utun interfaces gehen
+    for route in $(netstat -nr | grep -E "tun|utun" | awk '{print $1}'); do
+        sudo route delete "$route" 2>/dev/null
+    done
+    
+    # 6. Firewall-Regeln zurücksetzen (falls vorhanden)
+    if [ -f "/etc/pf.conf.backup" ]; then
+        sudo cp /etc/pf.conf.backup /etc/pf.conf 2>/dev/null
+        sudo pfctl -d 2>/dev/null  # Packet Filter deaktivieren
+        sudo pfctl -e 2>/dev/null  # Packet Filter wieder aktivieren
+        sudo pfctl -f /etc/pf.conf 2>/dev/null  # Regeln neu laden
+    fi
+    
+    # 7. Netzwerk-Dienste neu starten
+    sudo killall -9 mDNSResponder 2>/dev/null
+    sudo killall -9 mDNSResponderHelper 2>/dev/null
+    sudo dscacheutil -flushcache 2>/dev/null
+    
+    echo -e "${GREEN}✅ Netzwerk-Wiederherstellung abgeschlossen${NC}"
+    
+    # Test der Verbindung
+    echo -e "${BLUE}🧪 Teste Internetverbindung...${NC}"
+    if ping -c 1 -t 2 8.8.8.8 >/dev/null 2>&1; then
+        echo -e "${GREEN}✅ Internetverbindung funktioniert${NC}"
+    else
+        echo -e "${RED}❌ Keine Internetverbindung - versuche erweiterte Wiederherstellung...${NC}"
+        
+        # Erweiterte Wiederherstellung
+        # DHCP erneuern
+        sudo ipconfig set "$wifi_interface" DHCP 2>/dev/null
+        
+        # Netzwerk-Präferenzen zurücksetzen
+        sudo rm -f /Library/Preferences/SystemConfiguration/com.apple.airport.preferences.plist 2>/dev/null
+        sudo rm -f /Library/Preferences/SystemConfiguration/com.apple.network.identification.plist 2>/dev/null
+        sudo rm -f /Library/Preferences/SystemConfiguration/com.apple.wifi.message-tracer.plist 2>/dev/null
+        sudo rm -f /Library/Preferences/SystemConfiguration/NetworkInterfaces.plist 2>/dev/null
+        sudo rm -f /Library/Preferences/SystemConfiguration/preferences.plist 2>/dev/null
+        
+        echo -e "${YELLOW}⚠️  Bitte starte das System neu, falls die Verbindung nicht funktioniert${NC}"
+    fi
+}
+
+# VPN komplett zurücksetzen
+reset_vpn_complete() {
+    echo -e "${RED}🔄 VOLLSTÄNDIGER VPN-RESET${NC}"
+    echo -e "${YELLOW}Diese Funktion setzt alle VPN-Einstellungen zurück${NC}"
+    echo ""
+    
+    # Alle VPN-Verbindungen trennen
+    echo "1. Trenne alle VPN-Verbindungen..."
+    for provider_cmd in nordvpn expressvpn mullvad surfshark-vpn protonvpn-cli; do
+        if command -v "$provider_cmd" >/dev/null 2>&1; then
+            case "$provider_cmd" in
+                "nordvpn") nordvpn disconnect 2>/dev/null ;;
+                "expressvpn") expressvpn disconnect 2>/dev/null ;;
+                "mullvad") mullvad disconnect 2>/dev/null ;;
+                "surfshark-vpn") surfshark-vpn disconnect 2>/dev/null ;;
+                "protonvpn-cli") protonvpn-cli disconnect 2>/dev/null ;;
+            esac
+        fi
+    done
+    
+    # Mullvad-spezifische Resets
+    if command -v mullvad >/dev/null 2>&1; then
+        echo "2. Setze Mullvad-Einstellungen zurück..."
+        mullvad lockdown-mode set off 2>/dev/null
+        mullvad auto-connect set off 2>/dev/null
+        mullvad dns set default 2>/dev/null
+        mullvad relay set location any 2>/dev/null
+        mullvad obfuscation set mode off 2>/dev/null
+        mullvad tunnel set ipv6 on 2>/dev/null
+    fi
+    
+    # Netzwerk komplett zurücksetzen
+    echo "3. Setze Netzwerk-Einstellungen zurück..."
+    reset_network_after_vpn
+    
+    # VPN-Konfigurationsdateien löschen (optional)
+    if [ -d "$CONFIG_DIR" ]; then
+        read -p "Möchtest du auch die VPN-Konfigurationsdateien löschen? (j/N): " delete_config
+        if [[ "$delete_config" =~ ^[jJ]$ ]]; then
+            rm -rf "$CONFIG_DIR"
+            echo -e "${GREEN}✅ VPN-Konfigurationsdateien gelöscht${NC}"
+        fi
+    fi
+    
+    echo ""
+    echo -e "${GREEN}✅ VPN-Reset abgeschlossen${NC}"
+    echo ""
+    echo "Nächste Schritte:"
+    echo "• Teste deine Internetverbindung"
+    echo "• Bei Problemen: System neustarten"
+    echo "• VPN neu konfigurieren wenn gewünscht"
 }
 
 # VPN + Tor Chaining
@@ -476,14 +662,29 @@ show_vpn_menu() {
     echo "Verfügbare Provider:"
     local i=1
     for provider in "${providers[@]}"; do
-        echo "  $i) $(get_provider_name "$provider")"
+        echo "  $i) $(get_provider_name "$provider") ($provider)"
         ((i++))
     done
     echo ""
-    read -p "Provider wählen (1-${#providers[@]}): " provider_choice
+    read -p "Provider wählen (1-${#providers[@]} oder Name): " provider_choice
     
-    if [[ "$provider_choice" -gt 0 && "$provider_choice" -le ${#providers[@]} ]]; then
-        local selected_provider="${providers[$((provider_choice-1))]}"
+    # Prüfe ob Eingabe eine Nummer oder ein Provider-Name ist
+    local selected_provider=""
+    
+    # Erst prüfen ob es eine gültige Nummer ist
+    if [[ "$provider_choice" =~ ^[0-9]+$ ]] && [[ "$provider_choice" -gt 0 && "$provider_choice" -le ${#providers[@]} ]]; then
+        selected_provider="${providers[$((provider_choice-1))]}"
+    else
+        # Prüfe ob Provider-Name eingegeben wurde
+        for provider in "${providers[@]}"; do
+            if [[ "$provider_choice" == "$provider" ]] || [[ "$provider_choice" == "$(get_provider_name "$provider")" ]]; then
+                selected_provider="$provider"
+                break
+            fi
+        done
+    fi
+    
+    if [ -n "$selected_provider" ]; then
         
         echo ""
         echo -e "${BLUE}Provider: $(get_provider_name "$selected_provider")${NC}"
@@ -495,12 +696,13 @@ show_vpn_menu() {
         echo "  4) Verbindung trennen"
         echo "  5) Standort anzeigen"
         echo "  6) VPN + Tor Chain"
-        echo "  7) Zurück"
+        echo "  7) VPN zurücksetzen (bei Problemen)"
+        echo "  8) Zurück"
         echo ""
-        read -p "Aktion wählen (1-7): " action
+        read -p "Aktion wählen (1-8 oder Name): " action
         
         case "$action" in
-            1)
+            1|connect)
                 echo ""
                 echo "Beliebte Länder:"
                 echo "  DE - Deutschland"
@@ -521,37 +723,54 @@ show_vpn_menu() {
                     echo -e "${RED}❌ Unbekannter Land-Code: $country_code${NC}"
                 fi
                 ;;
-            2)
+            2|status)
                 echo ""
                 check_vpn_status "$selected_provider"
                 ;;
-            3)
+            3|countries)
                 echo ""
                 show_countries "$selected_provider"
                 ;;
-            4)
+            4|disconnect)
                 disconnect_vpn "$selected_provider"
                 ;;
-            5)
+            5|location)
                 echo ""
                 show_location
                 ;;
-            6)
+            6|chain)
                 echo ""
                 echo "VPN + Tor Chaining:"
                 echo "  1) Tor-over-VPN (empfohlen)"
                 echo "  2) VPN-over-Tor"
                 echo ""
-                read -p "Chain-Modus wählen (1-2): " chain_mode
+                read -p "Chain-Modus wählen (1-2 oder Name): " chain_mode
                 read -p "Land-Code für VPN (z.B. DE): " country_code
                 country_code=$(echo "$country_code" | tr '[:lower:]' '[:upper:]')
                 
                 case "$chain_mode" in
-                    1) setup_vpn_tor_chain "tor-over-vpn" "$selected_provider" "$country_code" ;;
-                    2) setup_vpn_tor_chain "vpn-over-tor" "$selected_provider" "$country_code" ;;
+                    1|tor-over-vpn) setup_vpn_tor_chain "tor-over-vpn" "$selected_provider" "$country_code" ;;
+                    2|vpn-over-tor) setup_vpn_tor_chain "vpn-over-tor" "$selected_provider" "$country_code" ;;
                 esac
                 ;;
+            7|reset)
+                echo ""
+                read -p "VPN wirklich zurücksetzen? Dies behebt Netzwerkprobleme. (j/N): " confirm
+                if [[ "$confirm" =~ ^[jJ]$ ]]; then
+                    reset_vpn_complete
+                fi
+                ;;
+            8|back)
+                return 0
+                ;;
         esac
+    else
+        echo -e "${RED}❌ Ungültiger Provider: $provider_choice${NC}"
+        echo "Verfügbare Provider:"
+        for provider in "${providers[@]}"; do
+            echo "  • $provider ($(get_provider_name "$provider"))"
+        done
+        return 1
     fi
 }
 
@@ -573,6 +792,9 @@ main() {
             ;;
         "disconnect")
             disconnect_vpn "$2"
+            ;;
+        "reset")
+            reset_vpn_complete
             ;;
         "status")
             if [ -n "$2" ]; then
@@ -613,12 +835,13 @@ main() {
             done
             ;;
         *)
-            echo "Usage: $0 [menu|connect|disconnect|status|location|countries|chain|providers]"
+            echo "Usage: $0 [menu|connect|disconnect|reset|status|location|countries|chain|providers]"
             echo ""
             echo "Beispiele:"
             echo "  $0 menu                          # Interaktives Menü"
             echo "  $0 connect nordvpn DE           # Zu Deutschland via NordVPN"
             echo "  $0 disconnect nordvpn           # NordVPN trennen"
+            echo "  $0 reset                        # VPN zurücksetzen & Netzwerk reparieren"
             echo "  $0 status                       # Status aller VPNs"
             echo "  $0 location                     # Aktueller Standort"
             echo "  $0 chain tor-over-vpn nordvpn DE # VPN+Tor Chain"

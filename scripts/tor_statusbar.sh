@@ -16,9 +16,9 @@ tor_running() {
     pgrep -x "tor" > /dev/null 2>&1 || netstat -an | grep -E "\.9050.*LISTEN" > /dev/null 2>&1
 }
 
-# Check if we're connected through Tor
+# Check if we're connected through Tor - IPv4 erzwingen
 tor_connected() {
-    local result=$(curl -s --connect-timeout 2 --socks5 localhost:9050 https://check.torproject.org/api/ip 2>/dev/null | grep -o '"IsTor":true' 2>/dev/null)
+    local result=$(curl -4 -s --connect-timeout 2 --socks5 localhost:9050 https://check.torproject.org/api/ip 2>/dev/null | grep -o '"IsTor":true' 2>/dev/null)
     [ -n "$result" ]
 }
 
@@ -27,12 +27,12 @@ proxy_enabled() {
     networksetup -getsocksfirewallproxy "Wi-Fi" 2>/dev/null | grep "Enabled: Yes" > /dev/null 2>&1
 }
 
-# Get current IP
+# Get current IP - IPv4 erzwingen
 get_ip() {
     if tor_connected; then
-        curl -s --connect-timeout 2 --socks5 localhost:9050 http://icanhazip.com 2>/dev/null || echo "Unknown"
+        curl -4 -s --connect-timeout 2 --socks5 localhost:9050 http://icanhazip.com 2>/dev/null || echo "Unknown"
     else
-        curl -s --connect-timeout 2 http://icanhazip.com 2>/dev/null || echo "Unknown"
+        curl -4 -s --connect-timeout 2 http://icanhazip.com 2>/dev/null || echo "Unknown"
     fi
 }
 
@@ -46,8 +46,8 @@ if tor_running; then
         current_ip=$(get_ip)
         echo "🌐 IP: $current_ip | color=green"
         
-        # Tor info from API
-        tor_info=$(curl -s --connect-timeout 2 --socks5 localhost:9050 https://check.torproject.org/api/ip 2>/dev/null)
+        # Tor info from API - IPv4 erzwingen
+        tor_info=$(curl -4 -s --connect-timeout 2 --socks5 localhost:9050 https://check.torproject.org/api/ip 2>/dev/null)
         if [ -n "$tor_info" ]; then
             tor_ip=$(echo "$tor_info" | grep -o '"IP":"[^"]*' | cut -d'"' -f4)
             [ -n "$tor_ip" ] && echo "🧅 Tor IP: $tor_ip | color=green"

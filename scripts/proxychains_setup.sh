@@ -32,7 +32,7 @@ configure_proxychains() {
     # Konfiguration erstellen
     sudo tee "$PROXYCHAINS_CONFIG" > /dev/null << 'EOF'
 # ProxyChains-4 Konfiguration für xxxOS
-# Optimiert für Tor-Nutzung
+# Optimiert für Tor-Nutzung mit IPv6-Schutz
 
 # Quiet mode (weniger Output)
 quiet_mode
@@ -42,6 +42,17 @@ dynamic_chain
 
 # Proxy DNS requests - wichtig für Anonymität!
 proxy_dns
+
+# IPv6 komplett deaktivieren für bessere Tor-Kompatibilität
+# Verhindert IPv6-Leaks die ProxyChains umgehen
+localnet 127.0.0.0/255.0.0.0
+localnet 10.0.0.0/255.0.0.0
+localnet 172.16.0.0/255.240.0.0
+localnet 192.168.0.0/255.255.0.0
+
+# TCP connection timeout in milliseconds
+tcp_connect_time_out 8000
+tcp_read_time_out 15000
 
 # Tor SOCKS5 Proxy
 [ProxyList]
@@ -66,10 +77,10 @@ alias pcnpm="proxychains4 npm"
 alias pcssh="proxychains4 ssh"
 alias pcping="proxychains4 ping"
 
-# IP-Check Aliase
-alias checkip="curl ipinfo.io"
-alias torip="proxychains4 curl ipinfo.io"
-alias torcheck="proxychains4 curl https://check.torproject.org/api/ip"
+# IP-Check Aliase - IPv4 erzwingen
+alias checkip="curl -4 ipinfo.io"
+alias torip="proxychains4 curl -4 ipinfo.io"
+alias torcheck="proxychains4 curl -4 https://check.torproject.org/api/ip"
 
 # Tor-Terminal - ALLE Befehle über Tor  
 alias torshell="PROXYCHAINS_QUIET_MODE=1 proxychains4 zsh"
