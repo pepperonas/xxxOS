@@ -9,13 +9,15 @@ A comprehensive suite of command-line tools for enhancing privacy and anonymity 
 xxxOS provides powerful privacy tools with an intuitive interface:
 
 - **🧅 Tor Integration**: Complete Tor service management with proxy configuration
-- **🔀 MAC Address Spoofing**: Randomize network interface MAC addresses
+- **🔀 MAC Address Spoofing**: Randomize network interface MAC addresses  
 - **🛡️ Enhanced Privacy**: DNS management, firewall control, and tracking protection
 - **🔒 Ultra Privacy Mode**: One-command maximum anonymity configuration
 - **🔍 Security Analysis**: Defensive security tools and vulnerability scanning
 - **📊 Privacy Level Tracking**: Real-time privacy status monitoring with scoring
+- **🌍 VPN Geo-Selection**: Multi-provider VPN with country selection and Tor chaining
 - **🌐 StatusBar Integration**: macOS menu bar status for Tor connection
 - **🕵️ TorShell**: Proxified terminal environment with custom icons
+- **🔄 Automatic Hostname Restoration**: Original hostname restored when privacy mode disabled
 
 ## 📦 Installation
 
@@ -121,6 +123,12 @@ Launches the main menu with all available functions.
 ./xxxos.sh security privacy    # Privacy audit
 ./xxxos.sh security vuln       # Vulnerability assessment
 ./xxxos.sh security full       # Complete security analysis
+
+# VPN Control  
+./xxxos.sh vpn menu            # Interactive VPN geo-selection menu
+./xxxos.sh vpn status          # VPN connection status
+./xxxos.sh vpn location        # Current IP location and info
+./xxxos.sh vpn providers       # Available VPN providers
 
 # Additional Tools
 ./xxxos.sh proxychains         # Setup ProxyChains4 for terminal
@@ -282,7 +290,40 @@ Launches the main menu with all available functions.
   
 - **`full`**: Complete security analysis (all above)
 
-### 9) Help - Documentation
+### 9) VPN - Geo-Location Selection
+
+**Multi-Provider VPN Support:**
+- **NordVPN, ExpressVPN, Surfshark** (with CLI clients)
+- **Mullvad, ProtonVPN** (with CLI clients)  
+- **WireGuard, OpenVPN** (custom configurations)
+
+**Features:**
+- **50+ Countries** available for connection
+- **Interactive country selection** with search
+- **Current location detection** and IP geolocation
+- **VPN + Tor chaining** for maximum anonymity
+- **Connection status monitoring**
+
+**VPN + Tor Chaining Options:**
+- **Tor-over-VPN** (recommended): Computer → VPN → Tor → Internet
+- **VPN-over-Tor** (advanced): Computer → Tor → VPN → Internet
+
+**Usage:**
+```bash
+# Interactive geo-selection menu
+./xxxos.sh vpn menu
+
+# Direct connection to Germany via NordVPN
+./scripts/vpn_control.sh connect nordvpn DE
+
+# VPN + Tor chain setup  
+./scripts/vpn_control.sh chain tor-over-vpn nordvpn DE
+
+# Current location and IP info
+./xxxos.sh vpn location
+```
+
+### 10) Help - Documentation
 
 Shows complete command-line usage and examples.
 
@@ -346,12 +387,19 @@ cp scripts/tor_statusbar.sh /your/swiftbar/plugins/tor_status.5s.sh
 - System proxy affects Safari but not all applications
 - DNS changes affect all network traffic
 - Firewall changes require administrator privileges
+- **Hostname is automatically restored** when privacy mode is disabled
 
 **Limitations:**
 - Some applications bypass system proxy
 - VPN software may conflict with Tor
 - Corporate networks may block Tor
 - Browser fingerprinting still possible
+
+**Enhanced Features:**
+- **Smart hostname management**: Original hostname saved and restored automatically
+- **Robust menu system**: No accidental exits from interactive menus
+- **Multi-provider VPN support**: Works with major VPN services
+- **VPN + Tor chaining**: Ultimate anonymity with layered protection
 
 ## 🛠️ Advanced Configuration
 
@@ -382,6 +430,35 @@ Modify TorShell environment in `scripts/torshell_wrapper.sh`:
 # Add custom aliases
 alias myip='curl --socks5 localhost:9050 http://icanhazip.com'
 alias checkip='curl --socks5 localhost:9050 https://check.torproject.org/api/ip'
+```
+
+### VPN Provider Setup
+
+**Install VPN Clients:**
+```bash
+# NordVPN (download from website)
+# https://nordvpn.com/download/mac/
+
+# ExpressVPN (download from website)  
+# https://www.expressvpn.com/setup
+
+# Mullvad
+brew install mullvad-vpn
+
+# ProtonVPN
+brew install protonvpn
+
+# Surfshark (download from website)
+# https://surfshark.com/download/mac
+```
+
+**Configure VPN Integration:**
+```bash
+# Test VPN provider detection
+./scripts/vpn_control.sh providers
+
+# Configure VPN + Tor chaining
+./scripts/vpn_control.sh chain tor-over-vpn <provider> <country>
 ```
 
 ## 🔧 Troubleshooting
@@ -426,13 +503,35 @@ chmod +x xxxos.sh scripts/*.sh
 sudo ./xxxos.sh mac
 ```
 
+**VPN connection issues:**
+```bash
+# Check VPN provider installation
+./xxxos.sh vpn providers
+
+# Test direct VPN connection
+nordvpn connect germany  # or your provider's command
+
+# Check VPN + Tor chain
+./xxxos.sh vpn location
+```
+
+**Menu system issues:**
+```bash
+# If menus exit unexpectedly, ensure latest version
+git pull origin main
+
+# Test menu navigation
+./xxxos.sh
+# Try empty inputs - should return to menu, not exit
+```
+
 ### Debug Mode
 
 Enable verbose output:
 
 ```bash
 # Set debug flag
-export XXXOS_DEBUG=1
+export xxxOS_DEBUG=1
 ./xxxos.sh status
 ```
 
@@ -446,13 +545,15 @@ xxxOS/
 ├── scripts/
 │   ├── tor_control.sh         # Tor service management
 │   ├── mac_spoofer.sh         # MAC address randomization
-│   ├── privacy_enhance.sh     # Enhanced privacy features
+│   ├── privacy_enhance.sh     # Enhanced privacy features (with hostname restoration)
 │   ├── proxychains_setup.sh   # ProxyChains configuration
 │   ├── security_tools.sh      # Security analysis tools
 │   ├── torshell_wrapper.sh    # TorShell environment
 │   ├── torshell_icon.sh       # TorShell icon customization
 │   ├── tor_statusbar.sh       # StatusBar plugin
-│   └── statusbar_wrappers.sh  # StatusBar action wrappers
+│   ├── statusbar_wrappers.sh  # StatusBar action wrappers
+│   ├── vpn_control.sh         # VPN geo-selection and chaining
+│   └── restore_hostname.sh    # Manual hostname restoration tool
 ```
 
 ## 🤝 Contributing

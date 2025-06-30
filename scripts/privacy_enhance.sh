@@ -14,11 +14,41 @@ clear_dns_cache() {
 # Hostname randomisieren
 randomize_hostname() {
     echo "🔀 Randomisiere Hostname..."
+    
+    # Aktuellen Hostname speichern, falls noch nicht gespeichert
+    if [ ! -f "$HOME/.xxxos/original_hostname" ]; then
+        mkdir -p "$HOME/.xxxos"
+        hostname > "$HOME/.xxxos/original_hostname"
+        echo "💾 Original-Hostname gespeichert: $(hostname)"
+    fi
+    
     RANDOM_NAME="mac-$(openssl rand -hex 4)"
     sudo scutil --set ComputerName "$RANDOM_NAME"
     sudo scutil --set LocalHostName "$RANDOM_NAME"
     sudo scutil --set HostName "$RANDOM_NAME"
     echo "✅ Neuer Hostname: $RANDOM_NAME"
+}
+
+# Hostname wiederherstellen
+restore_hostname() {
+    echo "🔄 Stelle Original-Hostname wieder her..."
+    
+    if [ -f "$HOME/.xxxos/original_hostname" ]; then
+        ORIGINAL_NAME=$(cat "$HOME/.xxxos/original_hostname")
+        sudo scutil --set ComputerName "$ORIGINAL_NAME"
+        sudo scutil --set LocalHostName "$ORIGINAL_NAME"
+        sudo scutil --set HostName "$ORIGINAL_NAME"
+        echo "✅ Hostname wiederhergestellt: $ORIGINAL_NAME"
+        
+        # Datei löschen nach Wiederherstellung
+        rm -f "$HOME/.xxxos/original_hostname"
+    else
+        echo "⚠️  Keine Original-Hostname-Datei gefunden"
+        echo "   Verwende Standard: MacBookPro"
+        sudo scutil --set ComputerName "MacBookPro"
+        sudo scutil --set LocalHostName "MacBookPro"
+        sudo scutil --set HostName "MacBookPro"
+    fi
 }
 
 # Browser-Cache und Cookies löschen
@@ -218,6 +248,9 @@ case "$1" in
         ;;
     hostname)
         randomize_hostname
+        ;;
+    hostname-restore)
+        restore_hostname
         ;;
     browser-clear)
         clear_browser_data

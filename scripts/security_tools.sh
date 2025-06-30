@@ -13,7 +13,7 @@ NC='\033[0m'
 # Banner
 show_security_banner() {
     echo -e "${BLUE}"
-    echo "🛡️  XXXOS SECURITY TOOLS"
+    echo "🛡️  xxxOS SECURITY TOOLS"
     echo "========================"
     echo -e "${NC}"
 }

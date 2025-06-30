@@ -42,7 +42,7 @@ if tor_running; then
         # Tor is running and we're connected through it
         echo "🧅 TOR"
         echo "---"
-        echo "✅ Connected via Tor | color=green"
+        echo "✅ Verbunden via Tor | color=green"
         current_ip=$(get_ip)
         echo "🌐 IP: $current_ip | color=green"
         

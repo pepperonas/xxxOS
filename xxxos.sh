@@ -41,7 +41,7 @@ echo "           weapon, and that is laughter.\"               "
 echo "                                                         "
 echo "                   - Mark Twain                          "
 echo "                                                            "
-echo -e "${BLUE}            Built 🔒 by Martin Pfeffer                  ${NC}"
+echo -e "${RED}         Hopefully secure - Martin Pfeffer                  ${NC}"
 echo "                                                            "
 echo "                                                            "
 }
@@ -115,8 +115,8 @@ check_scripts() {
 handle_tor() {
     if [ -z "$1" ]; then
         echo -e "${RED}Fehler: Keine Aktion angegeben${NC}"
-        echo "Verwende: $0 tor {start|stop|status|proxy-on|proxy-off|full-on|full-off|test}"
-        exit 1
+        echo "Verwende: tor {start|stop|status|proxy-on|proxy-off|full-on|full-off|test}"
+        return 1
     fi
     "$TOR_SCRIPT" "$1"
 }
@@ -159,6 +159,11 @@ handle_privacy() {
             echo ""
             
             "$TOR_SCRIPT" full-off
+            echo ""
+            
+            # Hostname wiederherstellen
+            echo -e "${BLUE}Stelle Original-Hostname wieder her...${NC}"
+            "$PRIVACY_SCRIPT" hostname-restore
             echo ""
             
             echo -e "${GREEN}✅ Privacy-Modus deaktiviert${NC}"
@@ -231,9 +236,9 @@ handle_privacy() {
             ;;
             
         *)
-            echo -e "${RED}Fehler: Ungültige Option${NC}"
-            echo "Verwende: $0 privacy {on|off|status|ultra}"
-            exit 1
+            echo -e "${RED}Fehler: Ungültige Option '$1'${NC}"
+            echo "Verwende: privacy {on|off|status|ultra}"
+            return 1
             ;;
     esac
 }
@@ -246,7 +251,7 @@ handle_security() {
             ;;
         "")
             show_banner
-            echo -e "${BLUE}🛡️ XXXOS SECURITY TOOLS${NC}"
+            echo -e "${BLUE}🛡️ xxxOS SECURITY TOOLS${NC}"
             echo "========================"
             echo ""
             echo "Verfügbare Security Checks:"
@@ -265,9 +270,9 @@ handle_security() {
             echo "  Verfügbar: nmap, gobuster, sqlmap, hydra, john"
             ;;
         *)
-            echo -e "${RED}Fehler: Ungültiger Security Check${NC}"
-            echo "Verwende: $0 security [system|network|dns|privacy|vuln|full]"
-            exit 1
+            echo -e "${RED}Fehler: Ungültiger Security Check '$1'${NC}"
+            echo "Verwende: security [system|network|dns|privacy|vuln|full]"
+            return 1
             ;;
     esac
 }
@@ -277,7 +282,7 @@ handle_enhance() {
     if [ -z "$1" ]; then
         echo -e "${RED}Fehler: Keine Aktion angegeben${NC}"
         "$PRIVACY_SCRIPT"
-        exit 1
+        return 1
     fi
     "$PRIVACY_SCRIPT" "$1"
 }
@@ -285,7 +290,7 @@ handle_enhance() {
 # Gesamtstatus anzeigen
 show_overall_status() {
     show_banner
-    echo -e "${BLUE}📊 XXXOS PRIVACY STATUS${NC}"
+    echo -e "${BLUE}📊 xxxOS PRIVACY STATUS${NC}"
     echo "========================"
     echo ""
     
@@ -490,7 +495,7 @@ show_ip_info() {
 # Interaktives Hauptmenü anzeigen
 show_interactive_menu() {
     show_banner
-    echo -e "${BLUE}🔧 XXXOS HAUPTMENÜ${NC}"
+    echo -e "${BLUE}🔧 xxxOS HAUPTMENÜ${NC}"
     echo "=================="
     echo ""
     echo "Verfügbare Funktionen:"
