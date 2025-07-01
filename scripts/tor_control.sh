@@ -32,29 +32,66 @@ start_tor() {
 
 stop_tor() {
     echo "🛑 Stoppe Tor..."
-    brew services stop tor
+    
+    # Prüfe ob Tor als root läuft
+    if brew services list | grep "tor" | grep -q "root"; then
+        echo "⚠️  Tor läuft als root - verwende sudo"
+        sudo brew services stop tor
+    else
+        brew services stop tor
+    fi
+    
     killall tor 2>/dev/null
+    sudo killall tor 2>/dev/null
     sleep 1
     
-    # Prüfe, ob Tor wirklich gestoppt ist (nur aktive Prozesse, keine geschlossenen Verbindungen)
+    # Prüfe, ob Tor wirklich gestoppt ist
     if ! pgrep -x "tor" > /dev/null 2>&1 && ! netstat -an | grep -E "\.9050.*LISTEN" > /dev/null 2>&1; then
         echo "✅ Tor gestoppt"
     else
-        echo "❌ Tor läuft noch"
+        echo "❌ Tor läuft noch - versuche forciertes Stoppen"
+        sudo pkill -f tor 2>/dev/null
+        sleep 2
+        if ! pgrep -x "tor" > /dev/null 2>&1; then
+            echo "✅ Tor forciert gestoppt"
+        else
+            echo "❌ Tor konnte nicht gestoppt werden"
+        fi
     fi
 }
 
 enable_system_proxy() {
     echo "🔒 Aktiviere systemweiten SOCKS-Proxy..."
+    
+    # SOCKS5-Proxy für Tor setzen
     networksetup -setsocksfirewallproxy "$NETWORK_SERVICE" 127.0.0.1 9050
     networksetup -setsocksfirewallproxystate "$NETWORK_SERVICE" on
-    echo "✅ Systemweiter Proxy aktiviert für: $NETWORK_SERVICE"
+    
+    # Auch HTTP/HTTPS-Proxy über Polipo oder direkt über Tor setzen (falls unterstützt)
+    # Viele macOS-Apps nutzen HTTP-Proxy statt SOCKS
+    echo "🌐 Konfiguriere zusätzliche Proxy-Einstellungen..."
+    
+    # HTTP-Proxy deaktivieren um SOCKS zu forcieren
+    networksetup -setwebproxystate "$NETWORK_SERVICE" off
+    networksetup -setsecurewebproxystate "$NETWORK_SERVICE" off
+    
+    echo "✅ Systemweiter SOCKS5-Proxy aktiviert für: $NETWORK_SERVICE"
+    echo "📌 Wichtig: Nicht alle Apps respektieren System-Proxy-Einstellungen"
+    echo "   → Safari, Chrome: ✅ Funktioniert"
+    echo "   → Terminal (curl, wget): ❌ Braucht explizite SOCKS5-Config"
+    echo "   → Für Terminal: Verwende proxychains4 oder torcurl"
 }
 
 disable_system_proxy() {
     echo "🔓 Deaktiviere systemweiten SOCKS-Proxy..."
     networksetup -setsocksfirewallproxystate "$NETWORK_SERVICE" off
+    
+    # Stelle sicher, dass alle Proxy-Einstellungen deaktiviert sind
+    networksetup -setwebproxystate "$NETWORK_SERVICE" off 2>/dev/null
+    networksetup -setsecurewebproxystate "$NETWORK_SERVICE" off 2>/dev/null
+    
     echo "✅ Systemweiter Proxy deaktiviert für: $NETWORK_SERVICE"
+    echo "🌐 Normale Internet-Verbindung wiederhergestellt"
 }
 
 show_status() {

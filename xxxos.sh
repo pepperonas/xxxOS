@@ -60,8 +60,11 @@ show_help() {
     echo "    status         - Status anzeigen"
     echo "    proxy-on       - System-Proxy aktivieren"
     echo "    proxy-off      - System-Proxy deaktivieren"
-    echo "    full-on        - Tor + Proxy aktivieren"
-    echo "    full-off       - Tor + Proxy deaktivieren"
+    echo "    full-on        - 🔒 System-weites Tor aktivieren"
+    echo "    full-off       - 🌐 System-weites Tor deaktivieren"
+    echo "    trans-on       - 🛡️  Transparentes Tor (Browser + Terminal)"
+    echo "    trans-off      - 🌐 Transparentes Tor deaktivieren"
+    echo "                      Terminal: source /tmp/tor_shell_config"
     echo "    test           - Verbindung testen"
     echo ""
     echo "  mac              - MAC-Adresse ändern (benötigt sudo)"
@@ -88,7 +91,7 @@ show_help() {
     echo "Examples:"
     echo "  $0 status                 # Gesamtstatus anzeigen"
     echo "  $0 ipinfo                 # Detaillierte IP-Informationen"
-    echo "  $0 tor start              # Tor starten"
+    echo "  $0 tor trans-on           # Transparentes Tor (alles über Tor)"
     echo "  $0 mac                    # MAC-Adresse ändern"
     echo "  $0 privacy on             # Vollständiger Privacy-Modus"
     echo "  $0 privacy ultra          # Maximum Privacy"
@@ -100,6 +103,9 @@ check_scripts() {
     if [ ! -f "$TOR_SCRIPT" ]; then
         echo -e "${RED}Fehler: tor_control.sh nicht gefunden in $TOR_SCRIPT${NC}"
         exit 1
+    fi
+    if [ ! -f "$SCRIPT_DIR/scripts/tor_transparent.sh" ]; then
+        echo -e "${YELLOW}Warnung: tor_transparent.sh nicht gefunden - Transparentes Tor nicht verfügbar${NC}"
     fi
     if [ ! -f "$MAC_SCRIPT" ]; then
         echo -e "${RED}Fehler: mac_spoofer.sh nicht gefunden in $MAC_SCRIPT${NC}"
@@ -113,12 +119,42 @@ check_scripts() {
 
 # Tor-Kontrolle
 handle_tor() {
+    local transparent_script="$SCRIPT_DIR/scripts/tor_transparent.sh"
+    
     if [ -z "$1" ]; then
         echo -e "${RED}Fehler: Keine Aktion angegeben${NC}"
-        echo "Verwende: tor {start|stop|status|proxy-on|proxy-off|full-on|full-off|test}"
+        echo "Verwende: tor {start|stop|status|full-on|full-off|trans-on|trans-off|test}"
         return 1
     fi
-    "$TOR_SCRIPT" "$1"
+    
+    case "$1" in
+        trans-on)
+            if [ ! -f "$transparent_script" ]; then
+                echo -e "${RED}❌ Transparenter Tor-Skript nicht gefunden${NC}"
+                return 1
+            fi
+            echo -e "${YELLOW}⚠️  Transparentes Tor benötigt sudo-Rechte${NC}"
+            sudo "$transparent_script" start
+            ;;
+        trans-off)
+            if [ ! -f "$transparent_script" ]; then
+                echo -e "${RED}❌ Transparenter Tor-Skript nicht gefunden${NC}"
+                return 1
+            fi
+            echo -e "${YELLOW}⚠️  Transparentes Tor benötigt sudo-Rechte${NC}"
+            sudo "$transparent_script" stop
+            ;;
+        trans-status)
+            if [ ! -f "$transparent_script" ]; then
+                echo -e "${RED}❌ Transparenter Tor-Skript nicht gefunden${NC}"
+                return 1
+            fi
+            "$transparent_script" status
+            ;;
+        *)
+            "$TOR_SCRIPT" "$1"
+            ;;
+    esac
 }
 
 # MAC-Adresse ändern
@@ -158,7 +194,14 @@ handle_privacy() {
             echo -e "${YELLOW}🔓 Deaktiviere Privacy-Modus...${NC}"
             echo ""
             
+            # Stoppe system-weites Tor
             "$TOR_SCRIPT" full-off
+            
+            # Prüfe und stoppe transparentes Tor falls aktiv
+            if [ -f "/tmp/tor_shell_config" ] || ls /tmp/tor_wrappers_* >/dev/null 2>&1; then
+                echo "🛑 Stoppe transparentes Tor..."
+                handle_tor "trans-off"
+            fi
             echo ""
             
             # Hostname wiederherstellen
@@ -227,7 +270,7 @@ handle_privacy() {
             echo "- Normale Befehle: curl ipinfo.io (zeigt echte IP)"
             echo "- Über Tor: proxychains4 curl ipinfo.io"
             echo "- Oder kürzer: pc curl ipinfo.io"
-            echo "- Tor-Shell: torshell (alles über Tor)"
+            echo "- Transparentes Tor: ./xxxos.sh tor trans-on + source /tmp/tor_shell_config (Terminal)"
             echo ""
             echo -e "${RED}⚠️  Browser:${NC}"
             echo "- WebRTC in deinem Browser deaktivieren"
@@ -265,9 +308,12 @@ handle_security() {
             echo ""
             echo "Verwendung: $0 security [check-typ]"
             echo ""
-            echo "Tor-Shell Security Tools:"
-            echo "  torshell - Öffnet Shell mit Security-Tools über Tor"
-            echo "  Verfügbar: nmap, gobuster, sqlmap, hydra, john"
+            echo "Tor Security Tools:"
+            echo "  1) Transparentes Tor: ./xxxos.sh tor trans-on"
+            echo "     → Browser/Apps: Automatisch über Tor"
+            echo "     → Terminal: source /tmp/tor_shell_config"
+            echo "  2) ProxyChains: pc <command> (z.B. pc nmap, pc sqlmap)"
+            echo "  Verfügbar: curl, nmap, gobuster, sqlmap über Tor"
             ;;
         *)
             echo -e "${RED}Fehler: Ungültiger Security Check '$1'${NC}"
@@ -488,7 +534,7 @@ show_ip_info() {
     echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
     echo -e "${BLUE}💡 Tipps:${NC}"
     echo "• Für maximale Anonymität: Verwende den Tor Browser"
-    echo "• Tor-Shell starten: torshell"
+    echo "• Transparentes Tor: ./xxxos.sh tor trans-on + source /tmp/tor_shell_config"
     echo "• Privacy-Status prüfen: $0 status"
 }
 
@@ -503,7 +549,7 @@ show_interactive_menu() {
     echo "  1) status           - Gesamtstatus aller Privacy-Funktionen"
     echo "  2) ipinfo           - Detaillierte IP-Informationen anzeigen"
     echo "  3) privacy          - Privacy-Modi (on/off/status/ultra)"
-    echo "  4) tor              - Tor-Kontrolle (start/stop/status/full-on/full-off)"
+    echo "  4) tor              - 🔒 Tor-Kontrolle (System-weit + Transparent verfügbar)"
     echo "  5) mac              - MAC-Adresse ändern"
     echo "  6) enhance          - Erweiterte Privacy-Funktionen"
     echo "  7) proxychains      - ProxyChains für Terminal einrichten"
@@ -545,13 +591,18 @@ handle_interactive_input() {
             if [ -z "$param" ]; then
                 echo ""
                 echo "Tor-Aktionen:"
-                echo "  start    - Tor starten"
-                echo "  stop     - Tor stoppen"
-                echo "  status   - Status anzeigen"
-                echo "  full-on  - Tor + Proxy aktivieren"
-                echo "  full-off - Tor + Proxy deaktivieren"
+                echo "  start      - Nur Tor-Service starten"
+                echo "  stop       - Nur Tor-Service stoppen"  
+                echo "  status     - Status anzeigen"
+                echo "  full-on    - 🔒 System-weites Tor (Browser/Apps)"
+                echo "  full-off   - 🌐 Normaler Internet-Verkehr"
+                echo "  trans-on   - 🛡️  TRANSPARENTES TOR (Browser + Terminal)"
+                echo "  trans-off  - 🌐 Transparentes Tor deaktivieren"
+                echo "  test       - Tor-Verbindung testen"
                 echo ""
-                read -p "Welche Tor-Aktion möchtest du? (start/stop/status/full-on/full-off): " param
+                echo "Nach trans-on für Terminal: source /tmp/tor_shell_config"
+                echo ""
+                read -p "Welche Tor-Aktion möchtest du? (start/stop/status/full-on/full-off/trans-on/trans-off/test): " param
             fi
             handle_tor "$param"
             ;;
@@ -671,7 +722,7 @@ handle_sonstiges() {
     echo ""
     echo "Zusätzliche Tools und Einstellungen:"
     echo ""
-    echo "  1) torshell-icon    - Tor-Shell Icon ändern"
+    echo "  1) tor-transparent  - Transparentes Tor konfigurieren"
     echo "  2) statusbar        - StatusBar-Plugin installieren"
     echo "  3) back             - Zurück zum Hauptmenü"
     echo ""
@@ -683,9 +734,18 @@ handle_sonstiges() {
     fi
     
     case "$choice" in
-        1|torshell-icon|icon)
+        1|tor-transparent|transparent)
             echo ""
-            "$SCRIPT_DIR/scripts/torshell_icon.sh"
+            echo "Transparentes Tor-Routing:"
+            echo "  start  - Transparentes Tor aktivieren (Browser + Terminal)"
+            echo "  stop   - Transparentes Tor deaktivieren" 
+            echo "  status - Status des transparenten Routings"
+            echo ""
+            echo "Nach 'start' für Terminal ausführen:"
+            echo "  source /tmp/tor_shell_config"
+            echo ""
+            read -p "Welche Aktion? (start/stop/status): " trans_action
+            handle_tor "trans-$trans_action"
             ;;
         2|statusbar)
             echo ""

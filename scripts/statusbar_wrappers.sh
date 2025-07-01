@@ -32,6 +32,10 @@ case "$1" in
         "$XXXOS_DIR/scripts/tor_control.sh" status
         keep_terminal_open
         ;;
+    "tor-transparent-status")
+        "$XXXOS_DIR/scripts/tor_transparent.sh" status
+        keep_terminal_open
+        ;;
     "ipinfo")
         "$XXXOS_DIR/xxxos.sh" ipinfo
         keep_terminal_open
@@ -43,10 +47,23 @@ case "$1" in
     "xxxos")
         cd "$XXXOS_DIR" && ./xxxos.sh
         ;;
-    "torshell")
-        cd "$XXXOS_DIR" && torshell
+    "tor-terminal")
+        echo "🔒 Tor-Terminal Konfiguration"
+        echo "=========================="
+        echo ""
+        echo "Nach transparentem Tor aktivieren:"
+        echo "  ./xxxos.sh tor trans-on"
+        echo ""
+        echo "Dann in neuer Terminal-Session:"
+        echo "  source /tmp/tor_shell_config"
+        echo "  curl https://check.torproject.org/api/ip"
+        echo ""
+        echo "Verfügbare Tor-Befehle:"
+        echo "  curl, git, gobuster, nmap, sqlmap"
+        echo ""
+        keep_terminal_open
         ;;
     *)
-        echo "Usage: $0 [status|privacy-on|privacy-off|privacy-ultra|tor-status|ipinfo|security-full|xxxos|torshell]"
+        echo "Usage: $0 [status|privacy-on|privacy-off|privacy-ultra|tor-status|tor-transparent-status|ipinfo|security-full|xxxos|tor-terminal]"
         ;;
 esac

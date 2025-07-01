@@ -79,11 +79,17 @@ fi
 echo "---"
 
 # Quick actions
-echo "🚀 Aktionen"
+echo "🚀 Tor Aktionen"
 echo "-- Tor starten | bash='$TOR_CONTROL' param1=start terminal=false refresh=true"
 echo "-- Tor stoppen | bash='$TOR_CONTROL' param1=stop terminal=false refresh=true"
-echo "-- Tor + Proxy aktivieren | bash='$TOR_CONTROL' param1=full-on terminal=false refresh=true"
-echo "-- Tor + Proxy deaktivieren | bash='$TOR_CONTROL' param1=full-off terminal=false refresh=true"
+echo "---"
+echo "🔒 System-weites Tor"
+echo "-- Browser/Apps aktivieren | bash='$TOR_CONTROL' param1=full-on terminal=false refresh=true"
+echo "-- Browser/Apps deaktivieren | bash='$TOR_CONTROL' param1=full-off terminal=false refresh=true"
+echo "---"
+echo "🛡️  Transparentes Tor"
+echo "-- Alles über Tor (sudo) | bash='$XXXOS_MAIN' param1=tor param2=trans-on terminal=true refresh=true"
+echo "-- Transparentes Tor aus (sudo) | bash='$XXXOS_MAIN' param1=tor param2=trans-off terminal=true refresh=true"
 echo "---"
 
 # Privacy status
@@ -97,6 +103,7 @@ echo "---"
 # Additional info
 echo "📊 Details"
 echo "-- Tor Status | bash='$WRAPPER' param1=tor-status terminal=true refresh=false"
+echo "-- Transparentes Tor Status | bash='$WRAPPER' param1=tor-transparent-status terminal=true refresh=false"
 echo "-- IP Info | bash='$WRAPPER' param1=ipinfo terminal=true refresh=false"
 echo "-- Security Check | bash='$WRAPPER' param1=security-full terminal=true refresh=false"
 echo "---"
@@ -104,6 +111,6 @@ echo "---"
 # Settings
 echo "⚙️  Einstellungen"
 echo "-- xxxOS öffnen | bash='$WRAPPER' param1=xxxos terminal=true refresh=false"
-echo "-- Tor Shell | bash='$WRAPPER' param1=torshell terminal=true refresh=false"
+echo "-- Terminal Tor-Konfiguration | bash='$WRAPPER' param1=tor-terminal terminal=true refresh=false"
 echo "---"
 echo "Aktualisieren | refresh=true"
