@@ -15,7 +15,7 @@ xxxOS provides powerful privacy tools with an intuitive interface:
 - **🔍 Security Analysis**: Defensive security tools and vulnerability scanning
 - **📊 Privacy Level Tracking**: Real-time privacy status monitoring with scoring
 - **🌍 VPN Geo-Selection**: Multi-provider VPN with country selection and Tor chaining
-- **🌐 StatusBar Integration**: macOS menu bar status for Tor connection
+- **🌐 StatusBar Integration**: macOS menu bar status for Tor connection with exit node location
 - **🕵️ TorShell**: Proxified terminal environment with custom icons
 - **🔄 Automatic Hostname Restoration**: Original hostname restored when privacy mode disabled
 
@@ -364,12 +364,16 @@ cp scripts/tor_statusbar.sh /your/swiftbar/plugins/tor_status.5s.sh
 ```
 
 **StatusBar Features:**
-- **🧅 TOR** - Connected and active
-- **🟡 TOR** - Running but not connected
-- **⚫ TOR** - Offline
+- **🧅** - Connected via Tor and active
+- **🟡** - Tor service running but not connected
+- **⚫** - Tor service offline
 
 **Dropdown Menu:**
-- Current IP and Tor status
+- ✅ Tor connection status
+- 🌐 Current IP address (with IPv6 support)
+- 📍 Current location (city, country)
+- 🧅 Tor exit node IP address
+- 📍 Exit node location (city, country)
 - Quick Tor start/stop actions
 - Privacy mode controls
 - Security analysis access
