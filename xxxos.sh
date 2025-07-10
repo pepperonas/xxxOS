@@ -18,104 +18,178 @@ YELLOW='\033[0;33m'
 BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
-# Banner anzeigen
+# Stylisches Banner anzeigen
 show_banner() {
 echo -e "${GREEN}"
-echo "                    xxxOS v0.0.1-beta                         "
-echo "                Privacy & Anonymity Tools                 "
-echo "                                                            "
-echo "       01001000 01001001 01000100 01000100 01000101         "
-echo "       01001110 00100000 01001001 01001110 00100000         "
-echo "       01010000 01001100 01000001 01001001 01001110         "
-echo "       00100000 01010011 01001001 01000111 01001000         "
-echo "       01010100 00101110 00101110 00101110 00101110         "
-echo "                                                            "
-echo "                ▐▄• ▄▐▄• ▄▐▄• ▄     .▄▄ ·                    "
-echo "                 █▌█▌▪█▌█▌▪█▌█▌▪    ▐█                      "
-echo "                 ·██· ·██· ·██· ▄█▀▄▄▀▀▀█▄                   "
-echo "                ▪▐█·█▪▐█·█▪▐█·█▐█▌.▐▐█▄▪▐█                  "
-echo "                •▀▀ ▀•▀▀ ▀•▀▀ ▀▀▀█▄▀▪▀▀▀▀                    "
-echo "                                                            "
-echo "      \"The human race has only one really effective     "
-echo "           weapon, and that is laughter.\"               "
-echo "                                                         "
-echo "                   - Mark Twain                          "
-echo "                                                            "
-echo -e "${RED}         Hopefully secure - Martin Pfeffer                  ${NC}"
-echo "                                                            "
-echo "                                                            "
+echo "  ╔════════════════════════════════════════════════════════════╗"
+echo "  ║                                                            ║"
+echo "  ║              ██╗  ██╗██╗  ██╗██╗  ██╗ ██████╗ ███████╗    ║"
+echo "  ║              ╚██╗██╔╝╚██╗██╔╝╚██╗██╔╝██╔═══██╗██╔════╝    ║"
+echo "  ║               ╚███╔╝  ╚███╔╝  ╚███╔╝ ██║   ██║███████╗    ║"
+echo "  ║               ██╔██╗  ██╔██╗  ██╔██╗ ██║   ██║╚════██║    ║"
+echo "  ║              ██╔╝ ██╗██╔╝ ██╗██╔╝ ██╗╚██████╔╝███████║    ║"
+echo "  ║              ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝ ╚══════╝    ║"
+echo "  ║                                                            ║"
+echo "  ║               🔒 Privacy & Anonymity Suite 🔒             ║"
+echo "  ║                                                            ║"
+echo "  ║                    Fire & Forget Privacy                  ║"
+echo "  ║                                                            ║"
+echo "  ╚════════════════════════════════════════════════════════════╝"
+echo -e "${BLUE}                        v2.0 - Simplified Edition               ${NC}"
+echo -e "${RED}                      by Martin Pfeffer                       ${NC}"
+echo ""
 }
 
-# Hilfe anzeigen
+# Vereinfachte Hilfe anzeigen
 show_help() {
-    echo "Usage: $0 [command] [options]"
+    echo -e "${BLUE}  ╔════════════════════════════════════════════════════════════╗${NC}"
+    echo -e "${BLUE}  ║                        xxxOS HILFE                        ║${NC}"
+    echo -e "${BLUE}  ╚════════════════════════════════════════════════════════════╝${NC}"
     echo ""
-    echo "Commands:"
-    echo "  status           - Gesamtstatus aller Privacy-Funktionen"
-    echo "  ipinfo           - Detaillierte IP-Informationen anzeigen"
+    echo -e "${GREEN}📋 Hauptfunktionen:${NC}"
     echo ""
-    echo "  tor <action>     - Tor-Kontrolle"
-    echo "    start          - Tor starten"
-    echo "    stop           - Tor stoppen"
-    echo "    status         - Status anzeigen"
-    echo "    proxy-on       - System-Proxy aktivieren"
-    echo "    proxy-off      - System-Proxy deaktivieren"
-    echo "    full-on        - 🔒 System-weites Tor aktivieren"
-    echo "    full-off       - 🌐 System-weites Tor deaktivieren"
-    echo "    trans-on       - 🛡️  Transparentes Tor (Browser + Terminal)"
-    echo "    trans-off      - 🌐 Transparentes Tor deaktivieren"
-    echo "                      Terminal: source /tmp/tor_shell_config"
-    echo "    test           - Verbindung testen"
+    echo -e "  ${YELLOW}./xxxos.sh${NC}              → Interaktives Menü"
+    echo -e "  ${YELLOW}./xxxos.sh privacy-on${NC}   → 🔒 Maximale Privatsphäre aktivieren"
+    echo -e "  ${YELLOW}./xxxos.sh privacy-off${NC}  → 🌐 Normale Einstellungen wiederherstellen"
+    echo -e "  ${YELLOW}./xxxos.sh status${NC}       → 📊 Privacy-Status anzeigen"
+    echo -e "  ${YELLOW}./xxxos.sh help${NC}         → Diese Hilfe anzeigen"
     echo ""
-    echo "  mac              - MAC-Adresse ändern (benötigt sudo)"
+    echo -e "${GREEN}🔥 Was macht 'privacy-on'?${NC}"
+    echo -e "  ${GREEN}✓${NC} MAC-Adresse ändern (bleibt permanent)"
+    echo -e "  ${GREEN}✓${NC} Hostname auf 'Lisa' setzen"
+    echo -e "  ${GREEN}✓${NC} Tor system-weit aktivieren"
+    echo -e "  ${GREEN}✓${NC} DNS auf Cloudflare umstellen"
+    echo -e "  ${GREEN}✓${NC} Firewall mit Stealth-Mode"
+    echo -e "  ${GREEN}✓${NC} Tracking-Domains blockieren"
+    echo -e "  ${GREEN}✓${NC} Browser-Daten bleiben erhalten!"
     echo ""
-    echo "  privacy          - Vollständiger Privacy-Modus"
-    echo "    on             - MAC ändern + Tor aktivieren"
-    echo "    off            - Tor deaktivieren"
-    echo "    status         - Aktuellen Status anzeigen"
-    echo "    ultra          - Ultra-Privacy (alle Funktionen)"
+    echo -e "${GREEN}🔄 Was macht 'privacy-off'?${NC}"
+    echo -e "  ${GREEN}✓${NC} Original-Hostname wiederherstellen"
+    echo -e "  ${GREEN}✓${NC} Tor deaktivieren"
+    echo -e "  ${GREEN}✓${NC} DNS-Einstellungen zurücksetzen"
+    echo -e "  ${GREEN}✓${NC} Tracking-Blocks entfernen"
+    echo -e "  ${YELLOW}!${NC} MAC-Adresse bleibt geändert (Sicherheit)"
     echo ""
-    echo "  enhance <action> - Erweiterte Privacy-Funktionen"
-    echo "    dns-clear      - DNS-Cache leeren"
-    echo "    hostname       - Hostname randomisieren"
-    echo "    browser-clear  - Browser-Daten löschen"
-    echo "    firewall       - Firewall aktivieren"
-    echo "    dns-privacy    - Privacy-DNS setzen"
-    echo "    block-tracking - Tracking blockieren"
-    echo "    all            - Alle Funktionen aktivieren"
+    echo -e "${RED}💡 Tipp:${NC} Für maximale Sicherheit verwende den Tor Browser!"
     echo ""
-    echo "  proxychains      - ProxyChains für Terminal einrichten"
-    echo ""
-    echo "  help             - Diese Hilfe anzeigen"
-    echo ""
-    echo "Examples:"
-    echo "  $0 status                 # Gesamtstatus anzeigen"
-    echo "  $0 ipinfo                 # Detaillierte IP-Informationen"
-    echo "  $0 tor trans-on           # Transparentes Tor (alles über Tor)"
-    echo "  $0 mac                    # MAC-Adresse ändern"
-    echo "  $0 privacy on             # Vollständiger Privacy-Modus"
-    echo "  $0 privacy ultra          # Maximum Privacy"
-    echo "  $0 enhance dns-clear      # DNS-Cache leeren"
 }
 
-# Überprüfe ob Skripte existieren
-check_scripts() {
-    if [ ! -f "$TOR_SCRIPT" ]; then
-        echo -e "${RED}Fehler: tor_control.sh nicht gefunden in $TOR_SCRIPT${NC}"
+# Intelligenter Dependency-Check und Auto-Installation
+check_dependencies() {
+    local missing_deps=()
+    local missing_scripts=()
+    local auto_install=false
+    
+    echo -e "${BLUE}🔍 Prüfe System-Abhängigkeiten...${NC}"
+    
+    # Kritische Befehle prüfen
+    command -v curl >/dev/null 2>&1 || missing_deps+=("curl")
+    command -v jq >/dev/null 2>&1 || missing_deps+=("jq")
+    command -v networksetup >/dev/null 2>&1 || missing_deps+=("networksetup")
+    command -v ifconfig >/dev/null 2>&1 || missing_deps+=("ifconfig")
+    command -v scutil >/dev/null 2>&1 || missing_deps+=("scutil")
+    
+    # Homebrew prüfen
+    if ! command -v brew >/dev/null 2>&1; then
+        missing_deps+=("homebrew")
+    fi
+    
+    # Tor prüfen
+    if ! command -v tor >/dev/null 2>&1; then
+        missing_deps+=("tor")
+    fi
+    
+    # ProxyChains prüfen
+    if ! command -v proxychains4 >/dev/null 2>&1; then
+        missing_deps+=("proxychains-ng")
+    fi
+    
+    # Skripte prüfen
+    [ ! -f "$TOR_SCRIPT" ] && missing_scripts+=("tor_control.sh")
+    [ ! -f "$MAC_SCRIPT" ] && missing_scripts+=("mac_spoofer.sh")
+    [ ! -f "$PRIVACY_SCRIPT" ] && missing_scripts+=("privacy_enhance.sh")
+    
+    # Ergebnisse anzeigen
+    if [ ${#missing_deps[@]} -eq 0 ] && [ ${#missing_scripts[@]} -eq 0 ]; then
+        echo -e "${GREEN}✅ Alle Abhängigkeiten vorhanden${NC}"
+        return 0
+    fi
+    
+    echo ""
+    echo -e "${YELLOW}⚠️  Fehlende Abhängigkeiten gefunden:${NC}"
+    
+    if [ ${#missing_deps[@]} -gt 0 ]; then
+        echo ""
+        echo "Fehlende Programme:"
+        for dep in "${missing_deps[@]}"; do
+            echo "  ❌ $dep"
+        done
+    fi
+    
+    if [ ${#missing_scripts[@]} -gt 0 ]; then
+        echo ""
+        echo "Fehlende Skripte:"
+        for script in "${missing_scripts[@]}"; do
+            echo "  ❌ $script"
+        done
+        echo -e "${RED}Kritische Skripte fehlen! Prüfe die Installation.${NC}"
         exit 1
     fi
-    if [ ! -f "$SCRIPT_DIR/scripts/tor_transparent.sh" ]; then
-        echo -e "${YELLOW}Warnung: tor_transparent.sh nicht gefunden - Transparentes Tor nicht verfügbar${NC}"
-    fi
-    if [ ! -f "$MAC_SCRIPT" ]; then
-        echo -e "${RED}Fehler: mac_spoofer.sh nicht gefunden in $MAC_SCRIPT${NC}"
-        exit 1
-    fi
-    if [ ! -f "$PRIVACY_SCRIPT" ]; then
-        echo -e "${RED}Fehler: privacy_enhance.sh nicht gefunden in $PRIVACY_SCRIPT${NC}"
-        exit 1
+    
+    # Auto-Installation anbieten
+    if [ ${#missing_deps[@]} -gt 0 ]; then
+        echo ""
+        read -p "Möchtest du die fehlenden Abhängigkeiten automatisch installieren? (j/N): " -n 1 -r
+        echo ""
+        
+        if [[ $REPLY =~ ^[Jj]$ ]]; then
+            install_dependencies "${missing_deps[@]}"
+        else
+            echo -e "${YELLOW}⚠️  Einige Funktionen funktionieren möglicherweise nicht korrekt.${NC}"
+            echo ""
+        fi
     fi
 }
+
+# Automatische Installation der Abhängigkeiten
+install_dependencies() {
+    local deps=("$@")
+    
+    echo -e "${BLUE}📦 Installiere fehlende Abhängigkeiten...${NC}"
+    echo ""
+    
+    for dep in "${deps[@]}"; do
+        case "$dep" in
+            homebrew)
+                echo "🍺 Installiere Homebrew..."
+                /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+                ;;
+            tor)
+                echo "🧅 Installiere Tor..."
+                brew install tor
+                ;;
+            jq)
+                echo "📋 Installiere jq..."
+                brew install jq
+                ;;
+            proxychains-ng)
+                echo "🔗 Installiere ProxyChains..."
+                brew install proxychains-ng
+                ;;
+            curl)
+                echo "🌐 curl sollte bereits installiert sein..."
+                ;;
+            *)
+                echo "❓ Unbekannte Abhängigkeit: $dep"
+                ;;
+        esac
+    done
+    
+    echo ""
+    echo -e "${GREEN}✅ Installation abgeschlossen!${NC}"
+    echo ""
+}
+
 
 # Tor-Kontrolle
 handle_tor() {
@@ -157,130 +231,221 @@ handle_tor() {
     esac
 }
 
+# Einfache Status-Ausgaben
+show_progress() {
+    echo -e "${GREEN}🔥 $1${NC}"
+}
+
+show_success() {
+    echo -e "${GREEN}$1${NC}"
+}
+
+# Hostname auf Lisa setzen
+set_hostname_lisa() {
+    echo "🔄 Setze Hostname auf 'Lisa'..."
+    
+    # Original-Hostname speichern falls noch nicht vorhanden
+    if [ ! -f "$HOME/.xxxos/original_hostname" ]; then
+        mkdir -p "$HOME/.xxxos"
+        scutil --get ComputerName > "$HOME/.xxxos/original_hostname" 2>/dev/null || echo "MacBook" > "$HOME/.xxxos/original_hostname"
+    fi
+    
+    sudo scutil --set ComputerName "Lisa"
+    sudo scutil --set LocalHostName "Lisa"
+    sudo scutil --set HostName "Lisa"
+    echo "✅ Hostname gesetzt auf: Lisa"
+}
+
+# Original-Hostname wiederherstellen
+restore_original_hostname() {
+    echo "🔄 Stelle Original-Hostname wieder her..."
+    
+    if [ -f "$HOME/.xxxos/original_hostname" ]; then
+        ORIGINAL_NAME=$(cat "$HOME/.xxxos/original_hostname")
+        sudo scutil --set ComputerName "$ORIGINAL_NAME"
+        sudo scutil --set LocalHostName "$ORIGINAL_NAME"
+        sudo scutil --set HostName "$ORIGINAL_NAME"
+        echo "✅ Hostname wiederhergestellt: $ORIGINAL_NAME"
+    else
+        echo "⚠️  Keine Original-Hostname-Datei gefunden - verwende Standard"
+        sudo scutil --set ComputerName "MacBook"
+        sudo scutil --set LocalHostName "MacBook"
+        sudo scutil --set HostName "MacBook"
+    fi
+}
+
+# DNS-Cache leeren
+clear_dns_cache() {
+    echo "🧹 Leere DNS-Cache..."
+    sudo dscacheutil -flushcache
+    sudo killall -HUP mDNSResponder 2>/dev/null
+    echo "✅ DNS-Cache geleert"
+}
+
+# Firewall aktivieren
+enable_firewall() {
+    echo "🔥 Aktiviere Firewall mit Stealth-Mode..."
+    sudo /usr/libexec/ApplicationFirewall/socketfilterfw --setglobalstate on
+    sudo /usr/libexec/ApplicationFirewall/socketfilterfw --setloggingmode on
+    sudo /usr/libexec/ApplicationFirewall/socketfilterfw --setstealthmode on
+    echo "✅ Firewall aktiviert"
+}
+
+# DNS auf Cloudflare setzen
+set_privacy_dns() {
+    echo "🔒 Setze Privacy-DNS (Cloudflare)..."
+    NETWORK_SERVICE=$(networksetup -listallnetworkservices | grep -E "(Wi-Fi|WiFi)" | head -1)
+    networksetup -setdnsservers "$NETWORK_SERVICE" 1.1.1.1 1.0.0.1
+    echo "✅ DNS geändert zu Cloudflare (1.1.1.1)"
+}
+
+# DNS-Einstellungen zurücksetzen
+reset_dns_settings() {
+    echo "🔄 Setze DNS-Einstellungen zurück..."
+    NETWORK_SERVICE=$(networksetup -listallnetworkservices | grep -E "(Wi-Fi|WiFi)" | head -1)
+    networksetup -setdnsservers "$NETWORK_SERVICE" "Empty"
+    echo "✅ DNS-Einstellungen zurückgesetzt"
+}
+
+# Tracking-Domains blockieren
+block_tracking() {
+    echo "🚫 Blockiere Tracking-Domains..."
+    
+    # Backup nur wenn noch nicht vorhanden
+    if [ ! -f "/etc/hosts.xxxos.backup" ]; then
+        sudo cp /etc/hosts /etc/hosts.xxxos.backup
+    fi
+    
+    # Tracking-Domains hinzufügen
+    cat << 'EOF' | sudo tee -a /etc/hosts > /dev/null
+
+# xxxOS Privacy Block List
+0.0.0.0 google-analytics.com
+0.0.0.0 www.google-analytics.com
+0.0.0.0 googletagmanager.com
+0.0.0.0 doubleclick.net
+0.0.0.0 facebook.com
+0.0.0.0 connect.facebook.net
+0.0.0.0 analytics.twitter.com
+0.0.0.0 amazon-adsystem.com
+EOF
+    
+    echo "✅ Tracking-Domains blockiert"
+}
+
+# Tracking-Blocks entfernen
+remove_tracking_blocks() {
+    echo "🔄 Entferne Tracking-Blocks..."
+    
+    if [ -f "/etc/hosts.xxxos.backup" ]; then
+        sudo cp /etc/hosts.xxxos.backup /etc/hosts
+        sudo rm -f /etc/hosts.xxxos.backup
+        echo "✅ Tracking-Blocks entfernt"
+    else
+        echo "⚠️  Kein Backup gefunden - entferne manuell"
+        sudo sed -i.bak '/# xxxOS Privacy Block List/,$ d' /etc/hosts
+        echo "✅ Tracking-Blocks entfernt"
+    fi
+}
+
+# Ortungsdienste deaktivieren
+disable_location() {
+    echo "📍 Deaktiviere Ortungsdienste..."
+    sudo launchctl unload /System/Library/LaunchDaemons/com.apple.locationd.plist 2>/dev/null
+    echo "✅ Ortungsdienste deaktiviert"
+}
+
 # MAC-Adresse ändern
 handle_mac() {
     echo -e "${YELLOW}MAC-Adresse wird geändert (benötigt sudo)...${NC}"
     sudo "$MAC_SCRIPT"
 }
 
-# Privacy-Modus
+# Vereinfachte Privacy-Funktionen
 handle_privacy() {
     case "$1" in
         on)
             show_banner
-            echo -e "${GREEN}🔒 Aktiviere vollständigen Privacy-Modus...${NC}"
+            show_progress "Maximale Privatsphäre wird aktiviert"
             echo ""
             
-            # MAC-Adresse ändern
-            echo -e "${BLUE}Schritt 1: MAC-Adresse ändern${NC}"
+            # 1. MAC-Adresse ändern
+            echo -e "${BLUE}[❶] MAC-Adresse spoofing...${NC}"
             sudo "$MAC_SCRIPT"
             echo ""
             
-            # Tor aktivieren
-            echo -e "${BLUE}Schritt 2: Tor aktivieren${NC}"
+            # 2. Erweiterte Privacy-Funktionen (ohne Browser-Daten löschen)
+            echo -e "${BLUE}[❷] Privacy-Funktionen aktivieren...${NC}"
+            clear_dns_cache
+            set_hostname_lisa
+            enable_firewall
+            set_privacy_dns
+            block_tracking
+            disable_location
+            echo ""
+            
+            # 3. Tor aktivieren
+            echo -e "${BLUE}[❸] Tor-Netzwerk aktivieren...${NC}"
             "$TOR_SCRIPT" full-on
             echo ""
             
-            echo -e "${GREEN}✅ Privacy-Modus aktiviert!${NC}"
+            # 4. ProxyChains konfigurieren
+            echo -e "${BLUE}[❹] ProxyChains konfigurieren...${NC}"
+            "$PROXYCHAINS_SCRIPT" install
             echo ""
-            echo "Tipps:"
-            echo "- Verwende den Tor Browser für maximale Anonymität"
-            echo "- Oder nutze: proxychains4 <command> für einzelne Anwendungen"
-            echo "- Safari nutzt automatisch den System-Proxy"
+            
+            show_success "🔥 MAXIMALE PRIVATSPHÄRE AKTIVIERT!"
+            echo ""
+            echo -e "${GREEN}✓ Aktiviert:${NC}"
+            echo "  • MAC-Adresse geändert (permanent)"
+            echo "  • Hostname: Lisa"
+            echo "  • Tor system-weit aktiv"
+            echo "  • DNS: Cloudflare (1.1.1.1)"
+            echo "  • Firewall: Stealth-Mode"
+            echo "  • Tracking blockiert"
+            echo "  • Browser-Daten: 🔒 Erhalten!"
+            echo ""
+            echo -e "${YELLOW}💡 Tipp:${NC} Verwende den Tor Browser für maximale Anonymität!"
             ;;
             
         off)
             show_banner
-            echo -e "${YELLOW}🔓 Deaktiviere Privacy-Modus...${NC}"
+            show_progress "Normale Einstellungen werden wiederhergestellt"
             echo ""
             
-            # Stoppe system-weites Tor
+            # 1. Tor deaktivieren
+            echo -e "${BLUE}[❶] Tor deaktivieren...${NC}"
             "$TOR_SCRIPT" full-off
+            echo ""
             
-            # Prüfe und stoppe transparentes Tor falls aktiv
+            # 2. Transparentes Tor falls aktiv
             if [ -f "/tmp/tor_shell_config" ] || ls /tmp/tor_wrappers_* >/dev/null 2>&1; then
-                echo "🛑 Stoppe transparentes Tor..."
+                echo -e "${BLUE}[❷] Transparentes Tor stoppen...${NC}"
                 handle_tor "trans-off"
+                echo ""
             fi
+            
+            # 3. Einstellungen zurücksetzen
+            echo -e "${BLUE}[❸] Einstellungen zurücksetzen...${NC}"
+            restore_original_hostname
+            reset_dns_settings
+            remove_tracking_blocks
             echo ""
             
-            # Hostname wiederherstellen
-            echo -e "${BLUE}Stelle Original-Hostname wieder her...${NC}"
-            "$PRIVACY_SCRIPT" hostname-restore
+            show_success "🌐 NORMALE EINSTELLUNGEN WIEDERHERGESTELLT!"
             echo ""
-            
-            echo -e "${GREEN}✅ Privacy-Modus deaktiviert${NC}"
-            echo -e "${YELLOW}Hinweis: MAC-Adresse bleibt geändert bis zum Neustart${NC}"
-            ;;
-            
-        status)
-            show_banner
-            echo -e "${BLUE}📊 Privacy-Status${NC}"
-            echo "=================="
+            echo -e "${GREEN}✓ Zurückgesetzt:${NC}"
+            echo "  • Original-Hostname wiederhergestellt"
+            echo "  • Tor deaktiviert"
+            echo "  • DNS-Einstellungen zurückgesetzt"
+            echo "  • Tracking-Blocks entfernt"
             echo ""
-            
-            # MAC-Adresse Status
-            echo -e "${BLUE}MAC-Adresse:${NC}"
-            CURRENT_MAC=$(ifconfig en0 | grep ether | awk '{print $2}')
-            echo "Aktuelle MAC: $CURRENT_MAC"
-            echo ""
-            
-            # Tor Status
-            "$TOR_SCRIPT" status
-            ;;
-            
-        ultra)
-            show_banner
-            echo -e "${RED}🛡️  ULTRA PRIVACY MODUS${NC}"
-            echo "======================"
-            echo ""
-            
-            # MAC-Adresse ändern
-            echo -e "${BLUE}Schritt 1: MAC-Adresse ändern${NC}"
-            sudo "$MAC_SCRIPT"
-            echo ""
-            
-            # Erweiterte Privacy-Funktionen
-            echo -e "${BLUE}Schritt 2: Erweiterte Privacy-Funktionen${NC}"
-            "$PRIVACY_SCRIPT" all
-            echo ""
-            
-            # Tor aktivieren
-            echo -e "${BLUE}Schritt 3: Tor aktivieren${NC}"
-            "$TOR_SCRIPT" full-on
-            echo ""
-            
-            # ProxyChains Setup
-            echo -e "${BLUE}Schritt 4: ProxyChains konfigurieren${NC}"
-            "$PROXYCHAINS_SCRIPT" install
-            echo ""
-            
-            echo -e "${GREEN}✅ ULTRA PRIVACY MODUS AKTIVIERT!${NC}"
-            echo ""
-            echo -e "${YELLOW}Wichtige Hinweise:${NC}"
-            echo "- Firewall ist aktiv mit Stealth-Modus"
-            echo "- DNS läuft über Cloudflare (1.1.1.1)"
-            echo "- Tracking-Domains sind blockiert"
-            echo "- Browser-Daten wurden gelöscht"
-            echo "- Hostname wurde randomisiert"
-            echo "- Ortungsdienste sind deaktiviert"
-            echo "- ProxyChains ist konfiguriert für Terminal-Befehle"
-            echo ""
-            echo -e "${RED}⚠️  Terminal-Nutzung:${NC}"
-            echo "- Normale Befehle: curl ipinfo.io (zeigt echte IP)"
-            echo "- Über Tor: proxychains4 curl ipinfo.io"
-            echo "- Oder kürzer: pc curl ipinfo.io"
-            echo "- Transparentes Tor: ./xxxos.sh tor trans-on + source /tmp/tor_shell_config (Terminal)"
-            echo ""
-            echo -e "${RED}⚠️  Browser:${NC}"
-            echo "- WebRTC in deinem Browser deaktivieren"
-            echo "- Tor Browser für maximale Anonymität nutzen"
-            echo "- JavaScript wenn möglich deaktivieren"
+            echo -e "${YELLOW}🔒 Hinweis:${NC} MAC-Adresse bleibt geändert (Sicherheit)"
             ;;
             
         *)
             echo -e "${RED}Fehler: Ungültige Option '$1'${NC}"
-            echo "Verwende: privacy {on|off|status|ultra}"
+            echo "Verwende: privacy-on oder privacy-off"
             return 1
             ;;
     esac
@@ -323,15 +488,6 @@ handle_security() {
     esac
 }
 
-# Erweiterte Privacy-Funktionen
-handle_enhance() {
-    if [ -z "$1" ]; then
-        echo -e "${RED}Fehler: Keine Aktion angegeben${NC}"
-        "$PRIVACY_SCRIPT"
-        return 1
-    fi
-    "$PRIVACY_SCRIPT" "$1"
-}
 
 # Gesamtstatus anzeigen
 show_overall_status() {
@@ -538,130 +694,80 @@ show_ip_info() {
     echo "• Privacy-Status prüfen: $0 status"
 }
 
-# Interaktives Hauptmenü anzeigen
+# Vereinfachtes Hauptmenü anzeigen
 show_interactive_menu() {
     show_banner
-    echo -e "${BLUE}🔧 xxxOS HAUPTMENÜ${NC}"
-    echo "=================="
+    echo -e "${BLUE}  ╔══════════════════════════════════════════════════════════════╗${NC}"
+    echo -e "${BLUE}  ║                    🔧 xxxOS HAUPTMENÜ 🔧                    ║${NC}"
+    echo -e "${BLUE}  ╚══════════════════════════════════════════════════════════════╝${NC}"
     echo ""
-    echo "Verfügbare Funktionen:"
+    echo -e "${GREEN}🔥 Hauptfunktionen:${NC}"
     echo ""
-    echo "  1) status           - Gesamtstatus aller Privacy-Funktionen"
-    echo "  2) ipinfo           - Detaillierte IP-Informationen anzeigen"
-    echo "  3) privacy          - Privacy-Modi (on/off/status/ultra)"
-    echo "  4) tor              - 🔒 Tor-Kontrolle (System-weit + Transparent verfügbar)"
-    echo "  5) mac              - MAC-Adresse ändern"
-    echo "  6) enhance          - Erweiterte Privacy-Funktionen"
-    echo "  7) proxychains      - ProxyChains für Terminal einrichten"
-    echo "  8) security         - Security-Analyse-Tools"
-    echo "  9) vpn              - VPN mit Geo-Standort-Auswahl"
-    echo " 10) help             - Hilfe anzeigen"
+    echo -e "  ${YELLOW}1) privacy-on${NC}        🔒 Maximale Privatsphäre aktivieren"
+    echo -e "  ${YELLOW}2) privacy-off${NC}       🌐 Normale Einstellungen wiederherstellen"
+    echo -e "  ${YELLOW}3) status${NC}            📊 Privacy-Status anzeigen"
+    echo -e "  ${YELLOW}4) help${NC}              💡 Hilfe anzeigen"
     echo ""
-    echo " 99) more             - Weitere Tools und Einstellungen"
-    echo "  0) exit             - Beenden"
+    echo -e "${BLUE}⚙️ Erweiterte Funktionen:${NC}"
+    echo ""
+    echo -e "  ${YELLOW}5) ipinfo${NC}            📍 Detaillierte IP-Informationen"
+    echo -e "  ${YELLOW}6) mac${NC}               🔀 MAC-Adresse ändern"
+    echo -e "  ${YELLOW}7) tor${NC}               🧅 Tor-Kontrolle (erweitert)"
+    echo ""
+    echo -e "  ${YELLOW}0) exit${NC}              👋 Beenden"
     echo ""
 }
 
-# Interaktive Eingabe verarbeiten
+# Vereinfachte Eingabeverarbeitung
 handle_interactive_input() {
     local choice="$1"
     local param="$2"
     
     case "$choice" in
-        1|status)
+        1|privacy-on)
+            handle_privacy "on"
+            ;;
+        2|privacy-off)
+            handle_privacy "off"
+            ;;
+        3|status)
             show_overall_status
             ;;
-        2|ipinfo)
+        4|help)
+            show_help
+            ;;
+        5|ipinfo)
             show_ip_info
             ;;
-        3|privacy)
-            if [ -z "$param" ]; then
-                echo ""
-                echo "Privacy-Modi:"
-                echo "  on     - Basic Privacy (MAC + Tor)"
-                echo "  off    - Privacy deaktivieren" 
-                echo "  status - Privacy-Status anzeigen"
-                echo "  ultra  - Ultra Privacy (alle Funktionen)"
-                echo ""
-                read -p "Welchen Privacy-Modus möchtest du? (on/off/status/ultra): " param
-            fi
-            handle_privacy "$param"
+        6|mac)
+            handle_mac
             ;;
-        4|tor)
+        7|tor)
             if [ -z "$param" ]; then
                 echo ""
-                echo "Tor-Aktionen:"
+                echo -e "${BLUE}Tor-Aktionen:${NC}"
+                echo ""
                 echo "  start      - Nur Tor-Service starten"
                 echo "  stop       - Nur Tor-Service stoppen"  
                 echo "  status     - Status anzeigen"
-                echo "  full-on    - 🔒 System-weites Tor (Browser/Apps)"
-                echo "  full-off   - 🌐 Normaler Internet-Verkehr"
-                echo "  trans-on   - 🛡️  TRANSPARENTES TOR (Browser + Terminal)"
-                echo "  trans-off  - 🌐 Transparentes Tor deaktivieren"
-                echo "  test       - Tor-Verbindung testen"
+                echo "  full-on    - 🔒 System-weites Tor"
+                echo "  full-off   - 🌐 System-weites Tor aus"
+                echo "  trans-on   - 🛡️  Transparentes Tor"
+                echo "  trans-off  - 🌐 Transparentes Tor aus"
+                echo "  test       - Verbindung testen"
                 echo ""
-                echo "Nach trans-on für Terminal: source /tmp/tor_shell_config"
-                echo ""
-                read -p "Welche Tor-Aktion möchtest du? (start/stop/status/full-on/full-off/trans-on/trans-off/test): " param
+                read -p "Welche Tor-Aktion? (start/stop/status/full-on/full-off/trans-on/trans-off/test): " param
             fi
             handle_tor "$param"
             ;;
-        5|mac)
-            handle_mac
-            ;;
-        6|enhance)
-            if [ -z "$param" ]; then
-                echo ""
-                echo "Erweiterte Privacy-Funktionen:"
-                echo "  dns-clear      - DNS-Cache leeren"
-                echo "  hostname       - Hostname randomisieren"
-                echo "  browser-clear  - Browser-Daten löschen"
-                echo "  firewall       - Firewall aktivieren"
-                echo "  dns-privacy    - Privacy-DNS setzen"
-                echo "  block-tracking - Tracking blockieren"
-                echo "  all            - Alle Funktionen aktivieren"
-                echo ""
-                read -p "Welche Funktion möchtest du? (dns-clear/hostname/browser-clear/etc.): " param
-            fi
-            handle_enhance "$param"
-            ;;
-        7|proxychains)
-            "$PROXYCHAINS_SCRIPT" install
-            ;;
-        8|security)
-            if [ -z "$2" ]; then
-                echo ""
-                echo "Security-Analyse:"
-                echo "  system  - System-Sicherheitsanalyse"
-                echo "  network - Netzwerk-Sicherheitsscan"
-                echo "  dns     - DNS-Sicherheitscheck"
-                echo "  privacy - Privacy-Audit"
-                echo "  vuln    - Vulnerability-Check"
-                echo "  full    - Komplette Analyse"
-                echo ""
-                read -p "Welchen Security-Check möchtest du? (system/network/dns/privacy/vuln/full): " param
-            else
-                param="$2"
-            fi
-            handle_security "$param"
-            ;;
-        9|vpn)
-            handle_vpn "$param"
-            ;;
-        10|help)
-            show_banner
-            show_help
-            ;;
-        99|more)
-            handle_sonstiges "$param"
-            ;;
         0|exit)
-            echo "👋 Auf Wiedersehen!"
+            echo ""
+            echo -e "${GREEN}👋 Auf Wiedersehen!${NC}"
             exit 0
             ;;
         *)
             echo -e "${RED}❌ Ungültige Eingabe: $choice${NC}"
-            echo "Bitte Nummer (0-10, 99) oder Funktionsname eingeben."
+            echo "Bitte Nummer (0-7) oder Funktionsname eingeben."
             return 1
             ;;
     esac
@@ -715,52 +821,6 @@ handle_vpn() {
     esac
 }
 
-# More-Menü
-handle_sonstiges() {
-    echo -e "${BLUE}🔧 MORE${NC}"
-    echo "============="
-    echo ""
-    echo "Zusätzliche Tools und Einstellungen:"
-    echo ""
-    echo "  1) tor-transparent  - Transparentes Tor konfigurieren"
-    echo "  2) statusbar        - StatusBar-Plugin installieren"
-    echo "  3) back             - Zurück zum Hauptmenü"
-    echo ""
-    
-    if [ -z "$1" ]; then
-        read -p "Welche Funktion möchtest du? (1-3): " choice
-    else
-        choice="$1"
-    fi
-    
-    case "$choice" in
-        1|tor-transparent|transparent)
-            echo ""
-            echo "Transparentes Tor-Routing:"
-            echo "  start  - Transparentes Tor aktivieren (Browser + Terminal)"
-            echo "  stop   - Transparentes Tor deaktivieren" 
-            echo "  status - Status des transparenten Routings"
-            echo ""
-            echo "Nach 'start' für Terminal ausführen:"
-            echo "  source /tmp/tor_shell_config"
-            echo ""
-            read -p "Welche Aktion? (start/stop/status): " trans_action
-            handle_tor "trans-$trans_action"
-            ;;
-        2|statusbar)
-            echo ""
-            "$SCRIPT_DIR/scripts/statusbar_installer.sh"
-            ;;
-        3|zurück|back)
-            return 0
-            ;;
-        *)
-            echo -e "${RED}❌ Ungültige Eingabe: $choice${NC}"
-            echo "Bitte Nummer (1-3) eingeben."
-            return 1
-            ;;
-    esac
-}
 
 # StatusBar automatisch starten falls Plugin installiert
 auto_start_statusbar() {
@@ -770,7 +830,7 @@ auto_start_statusbar() {
 
 # Hauptprogramm
 main() {
-    check_scripts
+    check_dependencies
     
     # StatusBar automatisch starten bei xxxOS-Start
     auto_start_statusbar
@@ -779,7 +839,7 @@ main() {
         while true; do
             show_interactive_menu
             echo ""
-            read -p "Funktion wählen (1-10, 99 oder Name): " user_choice
+            read -p "Funktion wählen (1-7, 0 oder Name): " user_choice
             
             # Parse Eingabe (z.B. "3 ultra" oder "privacy ultra")
             choice=$(echo "$user_choice" | awk '{print $1}')
@@ -801,23 +861,27 @@ main() {
     fi
     
     case "$1" in
+        privacy-on)
+            handle_privacy "on"
+            ;;
+        privacy-off)
+            handle_privacy "off"
+            ;;
         status)
             show_overall_status
+            ;;
+        help|-h|--help)
+            show_banner
+            show_help
             ;;
         ipinfo)
             show_ip_info
             ;;
-        tor)
-            handle_tor "$2"
-            ;;
         mac)
             handle_mac
             ;;
-        privacy)
-            handle_privacy "$2"
-            ;;
-        enhance)
-            handle_enhance "$2"
+        tor)
+            handle_tor "$2"
             ;;
         proxychains)
             "$PROXYCHAINS_SCRIPT" install
@@ -828,13 +892,18 @@ main() {
         vpn)
             handle_vpn "$2"
             ;;
-        help|-h|--help)
-            show_banner
-            show_help
+        # Legacy support
+        privacy)
+            if [ "$2" = "on" ] || [ "$2" = "off" ]; then
+                handle_privacy "$2"
+            else
+                echo -e "${YELLOW}💡 Tipp: Verwende 'privacy-on' oder 'privacy-off'${NC}"
+                show_help
+            fi
             ;;
         *)
-            echo -e "${RED}Fehler: Unbekannter Befehl '$1'${NC}"
-            echo "Verwende: $0 help für Hilfe"
+            echo -e "${RED}❌ Unbekannter Befehl '$1'${NC}"
+            echo -e "${YELLOW}💡 Verwende: $0 help für Hilfe${NC}"
             exit 1
             ;;
     esac

@@ -92,12 +92,11 @@ echo "-- Alles über Tor (sudo) | bash='$XXXOS_MAIN' param1=tor param2=trans-on 
 echo "-- Transparentes Tor aus (sudo) | bash='$XXXOS_MAIN' param1=tor param2=trans-off terminal=true refresh=true"
 echo "---"
 
-# Privacy status
+# Privacy status - Vereinfachte Befehle
 echo "🔒 Privacy"
 echo "-- Status anzeigen | bash='$WRAPPER' param1=status terminal=true refresh=false"
-echo "-- Privacy Mode ON | bash='$WRAPPER' param1=privacy-on terminal=true refresh=false"
-echo "-- Privacy Mode OFF | bash='$WRAPPER' param1=privacy-off terminal=true refresh=false"
-echo "-- Ultra Privacy Mode | bash='$WRAPPER' param1=privacy-ultra terminal=true refresh=false"
+echo "-- 🔥 Privacy ON | bash='$WRAPPER' param1=privacy-on terminal=true refresh=false"
+echo "-- 🌐 Privacy OFF | bash='$WRAPPER' param1=privacy-off terminal=true refresh=false"
 echo "---"
 
 # Additional info

@@ -17,15 +17,18 @@ case "$1" in
         keep_terminal_open
         ;;
     "privacy-on")
-        "$XXXOS_DIR/xxxos.sh" privacy on
+        "$XXXOS_DIR/xxxos.sh" privacy-on
         keep_terminal_open
         ;;
     "privacy-off")
-        "$XXXOS_DIR/xxxos.sh" privacy off
+        "$XXXOS_DIR/xxxos.sh" privacy-off
         keep_terminal_open
         ;;
     "privacy-ultra")
-        "$XXXOS_DIR/xxxos.sh" privacy ultra
+        echo "⚠️  Ultra Privacy Mode wurde vereinfacht."
+        echo "Verwende stattdessen: privacy-on"
+        echo ""
+        "$XXXOS_DIR/xxxos.sh" privacy-on
         keep_terminal_open
         ;;
     "tor-status")
@@ -64,6 +67,8 @@ case "$1" in
         keep_terminal_open
         ;;
     *)
-        echo "Usage: $0 [status|privacy-on|privacy-off|privacy-ultra|tor-status|tor-transparent-status|ipinfo|security-full|xxxos|tor-terminal]"
+        echo "Usage: $0 [status|privacy-on|privacy-off|tor-status|ipinfo|xxxos|tor-terminal]"
+        echo ""
+        echo "Vereinfachte xxxOS StatusBar-Wrapper"
         ;;
 esac

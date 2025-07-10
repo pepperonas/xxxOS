@@ -2,34 +2,13 @@
 
 # Erweiterte Privacy-Funktionen für xxxOS
 # (c) 2025 Martin Pfeffer - MIT License
+# Vereinfachte Version - Hauptfunktionen sind in xxxos.sh implementiert
 
-# DNS-Cache leeren
-clear_dns_cache() {
-    echo "🧹 Leere DNS-Cache..."
-    sudo dscacheutil -flushcache
-    sudo killall -HUP mDNSResponder 2>/dev/null
-    echo "✅ DNS-Cache geleert"
-}
+# Pfad zum Hauptskript
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+XXXOS_MAIN="$(dirname "$SCRIPT_DIR")/xxxos.sh"
 
-# Hostname randomisieren
-randomize_hostname() {
-    echo "🔀 Randomisiere Hostname..."
-    
-    # Aktuellen Hostname speichern, falls noch nicht gespeichert
-    if [ ! -f "$HOME/.xxxos/original_hostname" ]; then
-        mkdir -p "$HOME/.xxxos"
-        hostname > "$HOME/.xxxos/original_hostname"
-        echo "💾 Original-Hostname gespeichert: $(hostname)"
-    fi
-    
-    RANDOM_NAME="mac-$(openssl rand -hex 4)"
-    sudo scutil --set ComputerName "$RANDOM_NAME"
-    sudo scutil --set LocalHostName "$RANDOM_NAME"
-    sudo scutil --set HostName "$RANDOM_NAME"
-    echo "✅ Neuer Hostname: $RANDOM_NAME"
-}
-
-# Hostname wiederherstellen
+# Hostname wiederherstellen (spezielle Funktion)
 restore_hostname() {
     echo "🔄 Stelle Original-Hostname wieder her..."
     
@@ -44,56 +23,24 @@ restore_hostname() {
         rm -f "$HOME/.xxxos/original_hostname"
     else
         echo "⚠️  Keine Original-Hostname-Datei gefunden"
-        echo "   Verwende Standard: MacBookPro"
-        sudo scutil --set ComputerName "MacBookPro"
-        sudo scutil --set LocalHostName "MacBookPro"
-        sudo scutil --set HostName "MacBookPro"
+        echo "   Verwende Standard: MacBook"
+        sudo scutil --set ComputerName "MacBook"
+        sudo scutil --set LocalHostName "MacBook"
+        sudo scutil --set HostName "MacBook"
     fi
 }
 
-# Browser-Cache und Cookies löschen
+# Browser-Cache und Cookies löschen (optional - nicht in privacy-on/off)
 clear_browser_data() {
     echo "🗑️  Browser-Daten löschen"
     echo "========================"
     echo ""
-    echo "⚠️  WARNUNG: Diese Aktion wird folgendes löschen:"
+    echo "⚠️  WARNUNG: Diese Aktion löscht Browserverlauf und Cookies!"
     echo ""
-    
-    # Gefundene Browser anzeigen
-    local found_browsers=0
-    
-    if [ -d ~/Library/Safari ]; then
-        echo "  🧭 Safari:"
-        echo "     - Browserverlauf"
-        echo "     - Downloads-Liste"
-        echo "     - Cache-Daten"
-        found_browsers=1
-    fi
-    
-    if [ -d ~/Library/Application\ Support/Google/Chrome ]; then
-        echo "  🌐 Chrome:"
-        echo "     - Browserverlauf"
-        echo "     - Cookies"
-        echo "     - Cache-Daten"
-        found_browsers=1
-    fi
-    
-    if [ -d ~/Library/Application\ Support/Firefox ]; then
-        echo "  🦊 Firefox:"
-        echo "     - Alle SQLite-Datenbanken"
-        echo "     - Cache-Daten"
-        found_browsers=1
-    fi
-    
-    if [ $found_browsers -eq 0 ]; then
-        echo "❌ Keine unterstützten Browser gefunden."
-        return
-    fi
-    
+    echo "💡 Hinweis: Das vereinfachte xxxOS (privacy-on) löscht KEINE Browser-Daten."
+    echo "   Passwörter und Verläufe bleiben erhalten für bessere Benutzerfreundlichkeit."
     echo ""
-    echo "⚠️  Gespeicherte Passwörter bleiben erhalten."
-    echo ""
-    read -p "Möchtest du fortfahren? (j/N): " -n 1 -r
+    read -p "Trotzdem fortfahren? (j/N): " -n 1 -r
     echo ""
     
     if [[ ! $REPLY =~ ^[Jj]$ ]]; then
@@ -128,36 +75,6 @@ clear_browser_data() {
     fi
 }
 
-# Firewall aktivieren
-enable_firewall() {
-    echo "🔥 Aktiviere Firewall..."
-    sudo /usr/libexec/ApplicationFirewall/socketfilterfw --setglobalstate on
-    sudo /usr/libexec/ApplicationFirewall/socketfilterfw --setloggingmode on
-    sudo /usr/libexec/ApplicationFirewall/socketfilterfw --setstealthmode on
-    echo "✅ Firewall aktiviert mit Stealth-Modus"
-}
-
-# Spotlight-Indizierung deaktivieren
-disable_spotlight() {
-    echo "🔍 Deaktiviere Spotlight-Indizierung..."
-    sudo mdutil -a -i off
-    echo "✅ Spotlight deaktiviert"
-}
-
-# Spotlight wieder aktivieren
-enable_spotlight() {
-    echo "🔍 Aktiviere Spotlight-Indizierung..."
-    sudo mdutil -a -i on
-    echo "✅ Spotlight aktiviert"
-}
-
-# Location Services deaktivieren
-disable_location() {
-    echo "📍 Deaktiviere Ortungsdienste..."
-    sudo launchctl unload /System/Library/LaunchDaemons/com.apple.locationd.plist 2>/dev/null
-    echo "✅ Ortungsdienste deaktiviert"
-}
-
 # WebRTC-Leak Protection Info
 show_webrtc_info() {
     echo ""
@@ -177,125 +94,83 @@ show_webrtc_info() {
     echo "   - WebRTC ist bereits deaktiviert"
 }
 
-# DNS-Server auf Privacy-fokussierte ändern
+# Legacy-Wrapper für Kompatibilität (leiten alle auf Hauptskript um)
+clear_dns_cache() {
+    echo "ℹ️  DNS-Cache wird vom Hauptskript verwaltet."
+    echo "Verwende: ./xxxos.sh privacy-on"
+}
+
+set_hostname_lisa() {
+    echo "ℹ️  Hostname wird vom Hauptskript verwaltet."
+    echo "Verwende: ./xxxos.sh privacy-on"
+}
+
+enable_firewall() {
+    echo "ℹ️  Firewall wird vom Hauptskript verwaltet."
+    echo "Verwende: ./xxxos.sh privacy-on"
+}
+
 set_privacy_dns() {
-    echo "🔒 Setze Privacy-DNS-Server..."
-    
-    # Netzwerk-Interface finden
-    NETWORK_SERVICE=$(networksetup -listallnetworkservices | grep -E "(Wi-Fi|WiFi)" | head -1)
-    
-    # Cloudflare DNS (Privacy-fokussiert)
-    networksetup -setdnsservers "$NETWORK_SERVICE" 1.1.1.1 1.0.0.1
-    echo "✅ DNS geändert zu Cloudflare (1.1.1.1)"
-    echo "   Alternative: Quad9 (9.9.9.9) oder AdGuard (94.140.14.14)"
+    echo "ℹ️  DNS-Einstellungen werden vom Hauptskript verwaltet."
+    echo "Verwende: ./xxxos.sh privacy-on"
 }
 
-# Tracking-Domains blockieren
 block_tracking() {
-    echo "🚫 Blockiere bekannte Tracking-Domains..."
-    
-    # Backup der hosts-Datei
-    sudo cp /etc/hosts /etc/hosts.backup.$(date +%Y%m%d)
-    
-    # Grundlegende Tracking-Domains hinzufügen
-    cat << 'EOF' | sudo tee -a /etc/hosts > /dev/null
-
-# xxxOS Privacy Block List
-0.0.0.0 google-analytics.com
-0.0.0.0 www.google-analytics.com
-0.0.0.0 googletagmanager.com
-0.0.0.0 www.googletagmanager.com
-0.0.0.0 doubleclick.net
-0.0.0.0 facebook.com
-0.0.0.0 www.facebook.com
-0.0.0.0 connect.facebook.net
-0.0.0.0 graph.facebook.com
-0.0.0.0 pixel.facebook.com
-0.0.0.0 analytics.twitter.com
-0.0.0.0 amazon-adsystem.com
-0.0.0.0 googleadservices.com
-0.0.0.0 googlesyndication.com
-0.0.0.0 scorecardresearch.com
-0.0.0.0 outbrain.com
-0.0.0.0 taboola.com
-EOF
-    
-    echo "✅ Tracking-Domains blockiert (Backup in /etc/hosts.backup.*)"
+    echo "ℹ️  Tracking-Schutz wird vom Hauptskript verwaltet."
+    echo "Verwende: ./xxxos.sh privacy-on"
 }
 
-# Alle Privacy-Einstellungen aktivieren
-enable_all() {
-    echo "🛡️  Aktiviere alle Privacy-Funktionen..."
-    echo ""
-    clear_dns_cache
-    randomize_hostname
-    echo ""
-    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-    clear_browser_data
-    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-    echo ""
-    enable_firewall
-    set_privacy_dns
-    block_tracking
-    disable_location
-    show_webrtc_info
+disable_location() {
+    echo "ℹ️  Ortungsdienste werden vom Hauptskript verwaltet."
+    echo "Verwende: ./xxxos.sh privacy-on"
 }
 
-# Hauptmenü
+# Legacy-Funktionen
+randomize_hostname() {
+    set_hostname_lisa
+}
+
+hostname() {
+    set_hostname_lisa
+}
+
+# Vereinfachtes Hauptmenü
 case "$1" in
-    dns-clear)
-        clear_dns_cache
-        ;;
-    hostname)
-        randomize_hostname
-        ;;
     hostname-restore)
         restore_hostname
         ;;
     browser-clear)
         clear_browser_data
         ;;
-    firewall)
-        enable_firewall
-        ;;
-    spotlight-off)
-        disable_spotlight
-        ;;
-    spotlight-on)
-        enable_spotlight
-        ;;
-    location-off)
-        disable_location
-        ;;
-    dns-privacy)
-        set_privacy_dns
-        ;;
-    block-tracking)
-        block_tracking
-        ;;
     webrtc-info)
         show_webrtc_info
         ;;
-    all)
-        enable_all
+    # Legacy-Support (leitet auf Hauptskript um)
+    dns-clear|hostname|hostname-lisa|firewall|dns-privacy|block-tracking|location-off|all)
+        echo "ℹ️  Diese Funktionen wurden ins Hauptskript integriert."
+        echo "💡 Verwende: $XXXOS_MAIN privacy-on"
+        echo ""
+        echo "Soll das Hauptskript gestartet werden? (j/N)"
+        read -p "> " -n 1 -r
+        echo ""
+        if [[ $REPLY =~ ^[Jj]$ ]]; then
+            "$XXXOS_MAIN"
+        fi
         ;;
     *)
-        echo "🔒 Erweiterte Privacy-Funktionen"
-        echo "================================"
+        echo "🔒 Erweiterte Privacy-Funktionen (Vereinfacht)"
+        echo "=============================================="
         echo ""
-        echo "Usage: $0 {command}"
+        echo "💡 Die meisten Funktionen sind jetzt im Hauptskript:"
+        echo "   ./xxxos.sh privacy-on    - Aktiviert alle Privacy-Funktionen"
+        echo "   ./xxxos.sh privacy-off   - Deaktiviert Privacy-Funktionen"
         echo ""
-        echo "Commands:"
-        echo "  dns-clear      - DNS-Cache leeren"
-        echo "  hostname       - Hostname randomisieren"
-        echo "  browser-clear  - Browser-Daten löschen"
-        echo "  firewall       - Firewall mit Stealth-Modus aktivieren"
-        echo "  spotlight-off  - Spotlight-Indizierung deaktivieren"
-        echo "  spotlight-on   - Spotlight-Indizierung aktivieren"
-        echo "  location-off   - Ortungsdienste deaktivieren"
-        echo "  dns-privacy    - Privacy-DNS-Server setzen"
-        echo "  block-tracking - Tracking-Domains blockieren"
-        echo "  webrtc-info    - WebRTC-Leak Schutz Info"
-        echo "  all            - Alle Privacy-Funktionen aktivieren"
+        echo "Verfügbare spezielle Funktionen:"
+        echo "  hostname-restore  - Original-Hostname wiederherstellen"
+        echo "  browser-clear     - Browser-Daten löschen (⚠️  nicht empfohlen)"
+        echo "  webrtc-info       - WebRTC-Leak Schutz Information"
+        echo ""
+        echo "🚀 Starte das Hauptskript für alle Privacy-Funktionen:"
+        echo "   $XXXOS_MAIN"
         ;;
 esac
