@@ -36,25 +36,62 @@ get_ip() {
     fi
 }
 
+# Get location (city/country) for current IP
+get_location() {
+    local ip="$1"
+    if [ "$ip" = "Unknown" ]; then
+        echo "Unknown"
+        return
+    fi
+    
+    local location_info
+    if tor_connected; then
+        location_info=$(curl -4 -s --connect-timeout 3 --socks5 localhost:9050 "http://ip-api.com/json/${ip}?fields=city,country" 2>/dev/null)
+    else
+        location_info=$(curl -4 -s --connect-timeout 3 "http://ip-api.com/json/${ip}?fields=city,country" 2>/dev/null)
+    fi
+    
+    if [ -n "$location_info" ] && echo "$location_info" | grep -q '"city"'; then
+        local city=$(echo "$location_info" | grep -o '"city":"[^"]*' | cut -d'"' -f4)
+        local country=$(echo "$location_info" | grep -o '"country":"[^"]*' | cut -d'"' -f4)
+        
+        if [ -n "$city" ] && [ -n "$country" ]; then
+            echo "$city, $country"
+        elif [ -n "$country" ]; then
+            echo "$country"
+        else
+            echo "Unknown"
+        fi
+    else
+        echo "Unknown"
+    fi
+}
+
 # Main status check
 if tor_running; then
     if tor_connected; then
         # Tor is running and we're connected through it
-        echo "🧅 TOR"
+        echo "🧅"
         echo "---"
         echo "✅ Verbunden via Tor | color=green"
         current_ip=$(get_ip)
         echo "🌐 IP: $current_ip | color=green"
+        current_location=$(get_location "$current_ip")
+        echo "📍 Standort: $current_location | color=green"
         
         # Tor info from API - IPv4 erzwingen
         tor_info=$(curl -4 -s --connect-timeout 2 --socks5 localhost:9050 https://check.torproject.org/api/ip 2>/dev/null)
         if [ -n "$tor_info" ]; then
             tor_ip=$(echo "$tor_info" | grep -o '"IP":"[^"]*' | cut -d'"' -f4)
-            [ -n "$tor_ip" ] && echo "🧅 Tor IP: $tor_ip | color=green"
+            if [ -n "$tor_ip" ]; then
+                echo "🧅 Tor IP: $tor_ip | color=green"
+                tor_location=$(get_location "$tor_ip")
+                echo "📍 Exit Node: $tor_location | color=green"
+            fi
         fi
     else
         # Tor is running but not connected
-        echo "🟡 TOR"
+        echo "🟡"
         echo "---"
         echo "⚠️  Tor läuft, aber nicht verbunden | color=orange"
         
@@ -66,14 +103,18 @@ if tor_running; then
         
         current_ip=$(get_ip)
         echo "🌐 Echte IP: $current_ip | color=orange"
+        current_location=$(get_location "$current_ip")
+        echo "📍 Standort: $current_location | color=orange"
     fi
 else
     # Tor is not running
-    echo "⚫ TOR"
+    echo "⚫"
     echo "---"
     echo "❌ Tor ist nicht aktiv | color=red"
     current_ip=$(get_ip)
     echo "🌐 Echte IP: $current_ip | color=red"
+    current_location=$(get_location "$current_ip")
+    echo "📍 Standort: $current_location | color=red"
 fi
 
 echo "---"
