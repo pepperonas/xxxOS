@@ -11,6 +11,12 @@ YELLOW='\033[0;33m'
 BLUE='\033[0;34m'
 NC='\033[0m'
 
+# SwiftBar Helper einbinden
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+if [ -f "$SCRIPT_DIR/swiftbar_helper.sh" ]; then
+    source "$SCRIPT_DIR/swiftbar_helper.sh"
+fi
+
 # IPv6 deaktivieren
 disable_ipv6() {
     echo -e "${BLUE}🚫 Deaktiviere IPv6 für bessere Tor-Sicherheit...${NC}"
@@ -27,6 +33,7 @@ disable_ipv6() {
     
     echo -e "${GREEN}✅ IPv6 deaktiviert${NC}"
     echo -e "${YELLOW}⚠️  Neustart empfohlen für vollständige Wirkung${NC}"
+    
 }
 
 # IPv6 aktivieren
@@ -44,6 +51,7 @@ enable_ipv6() {
     done
     
     echo -e "${GREEN}✅ IPv6 aktiviert${NC}"
+    
 }
 
 # IPv6 Status prüfen

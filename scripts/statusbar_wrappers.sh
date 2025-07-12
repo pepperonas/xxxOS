@@ -4,6 +4,20 @@
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 XXXOS_DIR="$(dirname "$SCRIPT_DIR")"
 
+# Globaler Sudo-Cache vor allen Aktionen
+start_sudo_cache() {
+    # IMMER erst prüfen ob sudoers-Konfiguration funktioniert
+    if sudo -n dscacheutil -flushcache >/dev/null 2>&1; then
+        # Sudoers funktioniert - NIEMALS Cache-Helper verwenden
+        return 0
+    fi
+    
+    # Nur wenn sudoers nicht funktioniert, Cache-Helper verwenden
+    if ! sudo -n true 2>/dev/null; then
+        "$SCRIPT_DIR/sudo_cache_helper.sh" start
+    fi
+}
+
 # Funktion um Terminal offen zu halten
 keep_terminal_open() {
     echo ""
@@ -17,10 +31,12 @@ case "$1" in
         keep_terminal_open
         ;;
     "privacy-on")
+        # Keine Cache-Helper - direkt ausführen
         "$XXXOS_DIR/xxxos.sh" privacy-on
         keep_terminal_open
         ;;
     "privacy-off")
+        # Keine Cache-Helper - direkt ausführen
         "$XXXOS_DIR/xxxos.sh" privacy-off
         keep_terminal_open
         ;;
@@ -28,6 +44,7 @@ case "$1" in
         echo "⚠️  Ultra Privacy Mode wurde vereinfacht."
         echo "Verwende stattdessen: privacy-on"
         echo ""
+        # Keine Cache-Helper - direkt ausführen
         "$XXXOS_DIR/xxxos.sh" privacy-on
         keep_terminal_open
         ;;

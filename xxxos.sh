@@ -18,6 +18,29 @@ YELLOW='\033[0;33m'
 BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
+# Sudo-Berechtigung am Anfang anfordern und für Session cachen
+cache_sudo() {
+    # IMMER erst prüfen ob sudoers-Konfiguration funktioniert
+    if sudo -n dscacheutil -flushcache >/dev/null 2>&1; then
+        # Sudoers funktioniert - NIEMALS Cache-Helper verwenden
+        return 0
+    fi
+    
+    # Verwende globalen Sudo-Cache nur wenn sudoers nicht funktioniert
+    if ! sudo -n true 2>/dev/null; then
+        "$SCRIPT_DIR/scripts/sudo_cache_helper.sh" start
+    fi
+}
+
+# Cleanup-Funktion für sudo-keeper
+cleanup_sudo_keeper() {
+    # Cleanup wird jetzt vom globalen Cache-Helper gehandhabt
+    :
+}
+
+# Trap für Cleanup bei Script-Ende
+trap cleanup_sudo_keeper EXIT
+
 # Stylisches Banner anzeigen
 show_banner() {
 echo -e "${GREEN}"
@@ -207,6 +230,7 @@ handle_tor() {
                 echo -e "${RED}❌ Transparenter Tor-Skript nicht gefunden${NC}"
                 return 1
             fi
+            cache_sudo
             echo -e "${YELLOW}⚠️  Transparentes Tor benötigt sudo-Rechte${NC}"
             sudo "$transparent_script" start
             ;;
@@ -215,6 +239,7 @@ handle_tor() {
                 echo -e "${RED}❌ Transparenter Tor-Skript nicht gefunden${NC}"
                 return 1
             fi
+            cache_sudo
             echo -e "${YELLOW}⚠️  Transparentes Tor benötigt sudo-Rechte${NC}"
             sudo "$transparent_script" stop
             ;;
@@ -224,6 +249,10 @@ handle_tor() {
                 return 1
             fi
             "$transparent_script" status
+            ;;
+        full-on|full-off)
+            cache_sudo
+            "$TOR_SCRIPT" "$1"
             ;;
         *)
             "$TOR_SCRIPT" "$1"
@@ -357,21 +386,25 @@ disable_location() {
 
 # MAC-Adresse ändern
 handle_mac() {
-    echo -e "${YELLOW}MAC-Adresse wird geändert (benötigt sudo)...${NC}"
-    sudo "$MAC_SCRIPT"
+    cache_sudo
+    echo -e "${YELLOW}MAC-Adresse wird geändert...${NC}"
+    "$MAC_SCRIPT"
 }
 
 # Vereinfachte Privacy-Funktionen
 handle_privacy() {
     case "$1" in
         on)
+            # Sudo-Berechtigung cachen
+            cache_sudo
+            
             show_banner
             show_progress "Maximale Privatsphäre wird aktiviert"
             echo ""
             
             # 1. MAC-Adresse ändern
             echo -e "${BLUE}[❶] MAC-Adresse spoofing...${NC}"
-            sudo "$MAC_SCRIPT"
+            "$MAC_SCRIPT"
             echo ""
             
             # 2. Erweiterte Privacy-Funktionen (ohne Browser-Daten löschen)
@@ -391,7 +424,7 @@ handle_privacy() {
             
             # 4. ProxyChains konfigurieren
             echo -e "${BLUE}[❹] ProxyChains konfigurieren...${NC}"
-            "$PROXYCHAINS_SCRIPT" install
+            "$PROXYCHAINS_SCRIPT" config
             echo ""
             
             show_success "🔥 MAXIMALE PRIVATSPHÄRE AKTIVIERT!"
@@ -409,6 +442,9 @@ handle_privacy() {
             ;;
             
         off)
+            # Sudo-Berechtigung cachen
+            cache_sudo
+            
             show_banner
             show_progress "Normale Einstellungen werden wiederhergestellt"
             echo ""

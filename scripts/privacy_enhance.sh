@@ -8,6 +8,11 @@
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 XXXOS_MAIN="$(dirname "$SCRIPT_DIR")/xxxos.sh"
 
+# SwiftBar Helper einbinden
+if [ -f "$SCRIPT_DIR/swiftbar_helper.sh" ]; then
+    source "$SCRIPT_DIR/swiftbar_helper.sh"
+fi
+
 # Hostname wiederherstellen (spezielle Funktion)
 restore_hostname() {
     echo "🔄 Stelle Original-Hostname wieder her..."
@@ -21,12 +26,14 @@ restore_hostname() {
         
         # Datei löschen nach Wiederherstellung
         rm -f "$HOME/.xxxos/original_hostname"
+        
     else
         echo "⚠️  Keine Original-Hostname-Datei gefunden"
         echo "   Verwende Standard: MacBook"
         sudo scutil --set ComputerName "MacBook"
         sudo scutil --set LocalHostName "MacBook"
         sudo scutil --set HostName "MacBook"
+        
     fi
 }
 

@@ -4,9 +4,9 @@
 # Shows Tor connection status in macOS menu bar
 # File should be named: tor_status.5s.sh (updates every 5 seconds)
 
-# Get script directory and set relative paths
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-XXXOS_DIR="$(dirname "$SCRIPT_DIR")"
+# Get script directory and set absolute paths
+# Use hardcoded path since SwiftBar runs from different location
+XXXOS_DIR="/Users/martin/WebstormProjects/xxxOS"
 TOR_CONTROL="$XXXOS_DIR/scripts/tor_control.sh"
 XXXOS_MAIN="$XXXOS_DIR/xxxos.sh"
 WRAPPER="$XXXOS_DIR/scripts/statusbar_wrappers.sh"
@@ -74,19 +74,15 @@ if tor_running; then
         echo "🧅"
         echo "---"
         echo "✅ Verbunden via Tor | color=green"
-        current_ip=$(get_ip)
-        echo "🌐 IP: $current_ip | color=green"
-        current_location=$(get_location "$current_ip")
-        echo "📍 Standort: $current_location | color=green"
         
         # Tor info from API - IPv4 erzwingen
         tor_info=$(curl -4 -s --connect-timeout 2 --socks5 localhost:9050 https://check.torproject.org/api/ip 2>/dev/null)
         if [ -n "$tor_info" ]; then
             tor_ip=$(echo "$tor_info" | grep -o '"IP":"[^"]*' | cut -d'"' -f4)
             if [ -n "$tor_ip" ]; then
-                echo "🧅 Tor IP: $tor_ip | color=green"
+                echo "🌐 IP: $tor_ip | color=green"
                 tor_location=$(get_location "$tor_ip")
-                echo "📍 Exit Node: $tor_location | color=green"
+                echo "📍 Standort: $tor_location | color=green"
             fi
         fi
     else
@@ -150,6 +146,7 @@ echo "---"
 
 # Settings
 echo "⚙️  Einstellungen"
+echo "-- 🔄 Neuer Standort (Exit Node) | bash='$TOR_CONTROL' param1=new-identity terminal=false refresh=true"
 echo "-- xxxOS öffnen | bash='$WRAPPER' param1=xxxos terminal=true refresh=false"
 echo "-- Terminal Tor-Konfiguration | bash='$WRAPPER' param1=tor-terminal terminal=true refresh=false"
 echo "---"

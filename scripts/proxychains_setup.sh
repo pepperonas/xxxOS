@@ -24,12 +24,12 @@ install_proxychains() {
 configure_proxychains() {
     echo "⚙️  Konfiguriere ProxyChains für Tor..."
     
-    # Backup erstellen
+    # Backup erstellen falls Datei existiert (ohne Cache-Helper!)
     if [ -f "$PROXYCHAINS_CONFIG" ]; then
-        sudo cp "$PROXYCHAINS_CONFIG" "$PROXYCHAINS_CONFIG.backup.$(date +%Y%m%d_%H%M%S)"
+        sudo cp "$PROXYCHAINS_CONFIG" "$PROXYCHAINS_CONFIG.backup.$(date +%Y%m%d_%H%M%S)" 2>/dev/null || true
     fi
     
-    # Konfiguration erstellen
+    # Konfiguration erstellen (direkt ohne Cache-Helper)
     sudo tee "$PROXYCHAINS_CONFIG" > /dev/null << 'EOF'
 # ProxyChains-4 Konfiguration für xxxOS
 # Optimiert für Tor-Nutzung mit IPv6-Schutz

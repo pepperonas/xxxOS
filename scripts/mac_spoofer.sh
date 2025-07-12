@@ -1,8 +1,8 @@
 #!/bin/bash
 
-# Überprüfen, ob das Skript mit sudo ausgeführt wird
-if [[ $EUID -ne 0 ]]; then
-   echo "Dieses Skript muss mit sudo ausgeführt werden: sudo $0"
+# Überprüfen, ob sudo-Rechte verfügbar sind (mit xxxOS sudoers-Konfiguration)
+if ! sudo -n dscacheutil -flushcache >/dev/null 2>&1; then
+   echo "Dieses Skript benötigt sudo-Rechte. Installiere xxxOS sudoers mit: ./scripts/xxxos_sudoers_setup.sh"
    exit 1
 fi
 
@@ -30,15 +30,15 @@ ifconfig "$INTERFACE" | grep ether | awk '{print $2}'
 
 # Wi-Fi kurz deaktivieren
 echo "Deaktiviere Wi-Fi..."
-networksetup -setairportpower "$INTERFACE" off
+sudo networksetup -setairportpower "$INTERFACE" off
 
 # MAC-Adresse ändern
 echo "Setze neue MAC-Adresse: $NEW_MAC"
-ifconfig "$INTERFACE" ether "$NEW_MAC"
+sudo ifconfig "$INTERFACE" ether "$NEW_MAC"
 
 # Wi-Fi wieder aktivieren
 echo "Aktiviere Wi-Fi..."
-networksetup -setairportpower "$INTERFACE" on
+sudo networksetup -setairportpower "$INTERFACE" on
 
 # Warte kurz, bis die Schnittstelle wieder aktiv ist
 sleep 2

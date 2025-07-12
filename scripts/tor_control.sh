@@ -3,6 +3,12 @@
 # Tor Control Script für macOS
 # Usage: ./tor_control.sh {start|stop|status|proxy-on|proxy-off|full-on|full-off}
 
+# SwiftBar Helper einbinden
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+if [ -f "$SCRIPT_DIR/swiftbar_helper.sh" ]; then
+    source "$SCRIPT_DIR/swiftbar_helper.sh"
+fi
+
 # Netzwerk-Interface automatisch erkennen (meist "Wi-Fi")
 NETWORK_SERVICE=$(networksetup -listallnetworkservices | grep -E "(Wi-Fi|WiFi)" | head -1)
 
@@ -54,8 +60,12 @@ stop_tor() {
         sleep 2
         if ! pgrep -x "tor" > /dev/null 2>&1; then
             echo "✅ Tor forciert gestoppt"
+            # SwiftBar neustarten
+            silent_restart_swiftbar
         else
             echo "❌ Tor konnte nicht gestoppt werden"
+            # SwiftBar neustarten
+            silent_restart_swiftbar
         fi
     fi
 }
@@ -80,6 +90,7 @@ enable_system_proxy() {
     echo "   → Safari, Chrome: ✅ Funktioniert"
     echo "   → Terminal (curl, wget): ❌ Braucht explizite SOCKS5-Config"
     echo "   → Für Terminal: Verwende proxychains4 oder torcurl"
+    
 }
 
 disable_system_proxy() {
@@ -92,6 +103,7 @@ disable_system_proxy() {
     
     echo "✅ Systemweiter Proxy deaktiviert für: $NETWORK_SERVICE"
     echo "🌐 Normale Internet-Verbindung wiederhergestellt"
+    
 }
 
 show_status() {
@@ -166,6 +178,42 @@ test_connection() {
     echo "   → Oder nutze: proxychains4 curl https://check.torproject.org/api/ip"
 }
 
+# Neue Tor Identity anfordern
+new_identity() {
+    echo "🔄 Fordere neue Tor-Identität an..."
+    
+    # Prüfe ob Tor läuft
+    if ! pgrep -x "tor" > /dev/null 2>&1; then
+        echo "❌ Tor läuft nicht. Starte Tor zuerst."
+        return 1
+    fi
+    
+    # Sende SIGHUP an Tor Prozess für neue Circuit
+    if pkill -HUP tor 2>/dev/null; then
+        echo "✅ Signal gesendet. Warte auf neue Verbindung..."
+        sleep 3
+        
+        # Teste neue Verbindung
+        local new_ip=$(curl -4 -s --connect-timeout 5 --socks5 localhost:9050 http://icanhazip.com 2>/dev/null)
+        if [ -n "$new_ip" ]; then
+            echo "✅ Neue IP-Adresse: $new_ip"
+            
+            # Hole Standort Info
+            local location_info=$(curl -4 -s --connect-timeout 3 --socks5 localhost:9050 "http://ip-api.com/json/${new_ip}?fields=city,country" 2>/dev/null)
+            if [ -n "$location_info" ] && echo "$location_info" | grep -q '"city"'; then
+                local city=$(echo "$location_info" | grep -o '"city":"[^"]*' | cut -d'"' -f4)
+                local country=$(echo "$location_info" | grep -o '"country":"[^"]*' | cut -d'"' -f4)
+                echo "📍 Neuer Standort: $city, $country"
+            fi
+        else
+            echo "⚠️  Konnte neue IP nicht abrufen"
+        fi
+    else
+        echo "❌ Fehler beim Senden des Signals"
+        return 1
+    fi
+}
+
 case "$1" in
     start)
         start_tor
@@ -196,10 +244,13 @@ case "$1" in
     test)
         test_connection
         ;;
+    new-identity|newnym)
+        new_identity
+        ;;
     *)
         echo "🔧 Tor Control Script"
         echo "===================="
-        echo "Usage: $0 {start|stop|status|proxy-on|proxy-off|full-on|full-off|test}"
+        echo "Usage: $0 {start|stop|status|proxy-on|proxy-off|full-on|full-off|test|new-identity}"
         echo ""
         echo "Befehle:"
         echo "  start      - Nur Tor-Service starten"
@@ -210,6 +261,7 @@ case "$1" in
         echo "  full-off   - Tor stoppen + System-Proxy deaktivieren"
         echo "  status     - Status anzeigen"
         echo "  test       - Verbindung testen"
+        echo "  new-identity - Neue Tor-Identität (neuer Exit Node)"
         echo ""
         echo "Erkanntes Netzwerk-Interface: $NETWORK_SERVICE"
         ;;

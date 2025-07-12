@@ -11,15 +11,22 @@ YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
 NC='\033[0m'
 
+# SwiftBar Helper einbinden
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+if [ -f "$SCRIPT_DIR/swiftbar_helper.sh" ]; then
+    source "$SCRIPT_DIR/swiftbar_helper.sh"
+fi
+
 # Konfiguration
 TOR_PORT="9050"
 TOR_TRANS_PORT="9040"
 TOR_DNS_PORT="9053"
 
 check_root() {
-    if [ "$EUID" -ne 0 ]; then
+    # Prüfe ob sudo verfügbar ist (kompatibel mit xxxOS Cache-System)
+    if ! sudo -n true 2>/dev/null; then
         echo -e "${RED}❌ Dieses Skript benötigt sudo-Rechte${NC}"
-        echo "Verwende: sudo $0 $*"
+        echo "Verwende: sudo $0 $* oder starte über xxxOS (verwendet Cache)"
         exit 1
     fi
 }
@@ -211,6 +218,7 @@ SHELL_EOF
             echo "  $wrapper_path/curl https://check.torproject.org/api/ip"
         fi
         echo ""
+        
     else
         echo -e "${RED}❌ Tor-Verbindung fehlgeschlagen${NC}"
         stop_transparent_tor
@@ -262,6 +270,7 @@ stop_transparent_tor() {
     
     echo ""
     echo -e "${GREEN}✅ Transparentes Tor deaktiviert${NC}"
+    
     echo -e "${GREEN}🌐 Normale Internet-Verbindung wiederhergestellt${NC}"
 }
 

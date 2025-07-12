@@ -16,6 +16,11 @@ BLUE='\033[0;34m'
 PURPLE='\033[0;35m'
 NC='\033[0m' # No Color
 
+# SwiftBar Helper einbinden
+if [ -f "$SCRIPT_DIR/swiftbar_helper.sh" ]; then
+    source "$SCRIPT_DIR/swiftbar_helper.sh"
+fi
+
 # VPN-Provider Namen abrufen
 get_provider_name() {
     case "$1" in

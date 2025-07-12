@@ -73,6 +73,20 @@ source ~/.zshrc
 ./xxxos.sh help
 ```
 
+### Optional: Password-less Setup
+
+To avoid entering your password repeatedly, you can set up password-less sudo for xxxOS commands:
+
+```bash
+# Run the setup script (requires one-time password)
+./scripts/xxxos_sudoers_setup.sh
+
+# To remove password-less access later:
+sudo rm /etc/sudoers.d/xxxos
+```
+
+**Note:** This increases convenience but reduces security. Only recommended for personal machines.
+
 ## 🚀 Usage
 
 ### Interactive Mode
